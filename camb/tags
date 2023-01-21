@@ -1,0 +1,76 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+Ali_Noise_level	fgresidual.py	/^def Ali_Noise_level(): # remember to set noise to (2501,2) matrix$/;"	f
+As_0	fgresidual.py	/^As_0 = 2.105209331337507e-09 #scalar_amp(1)$/;"	v
+As_CLprime	fgresidual.py	/^As_CLprime=npzdata['As_CLprime']$/;"	v
+As_prime	fgresidual.py	/^def As_prime():$/;"	f
+CubicSpline	fgresidual.py	/^    from scipy.interpolate import CubicSpline$/;"	i
+DM_Gamma_0	fgresidual.py	/^DM_Gamma_0=0$/;"	v
+DM_Gamma_prime	fgresidual.py	/^def DM_Gamma_prime(params_value):$/;"	f
+DM_Pann_0	fgresidual.py	/^DM_Pann_0=0$/;"	v
+DM_Pann_prime	fgresidual.py	/^def DM_Pann_prime(params_value):$/;"	f
+DM_mass_0	fgresidual.py	/^DM_mass_0=1e-4$/;"	v
+DM_mass_prime	fgresidual.py	/^def DM_mass_prime():$/;"	f
+Noisecls	fgresidual.py	/^Noisecls=pico_noise_level()$/;"	v
+ali_fg_res	fgresidual.py	/^def ali_fg_res():$/;"	f
+cangjs_Noise_level	fgresidual.py	/^def cangjs_Noise_level():$/;"	f
+clsn	fgresidual.py	/^clsn=initial_totCL()$/;"	v
+dls2cls	fgresidual.py	/^def dls2cls(dls):$/;"	f
+dm_mass_set	fgresidual.py	/^dm_mass_set=np.geomspace(1e-5,5e3,mass_len)$/;"	v
+fg_res_dls2cls	fgresidual.py	/^def fg_res_dls2cls(dls):$/;"	f
+fgrescls	fgresidual.py	/^fgrescls=pico_fg_res()$/;"	v
+fileinput	fgresidual.py	/^import fileinput$/;"	i
+fsky	fgresidual.py	/^fsky=1.0$/;"	v
+get_EE_fisher_matrix	fgresidual.py	/^def get_EE_fisher_matrix(Derivative):$/;"	f
+get_TE_fisher_matrix	fgresidual.py	/^def get_TE_fisher_matrix(Derivative):$/;"	f
+get_TT_fisher_matrix	fgresidual.py	/^def get_TT_fisher_matrix(Derivative):$/;"	f
+get_combined_fisher_matrix	fgresidual.py	/^def get_combined_fisher_matrix(Derivative):$/;"	f
+get_thetastarmc_from_files	fgresidual.py	/^def get_thetastarmc_from_files():$/;"	f
+hubble_0	fgresidual.py	/^hubble_0 = 67.66$/;"	v
+in	fgresidual.py	/^from matplotlib import rc # latex in matplotlib$/;"	i
+initial_totCL	fgresidual.py	/^def initial_totCL():$/;"	f
+latex	fgresidual.py	/^from matplotlib import rc # latex in matplotlib$/;"	i
+log_Cubic_interpolate	fgresidual.py	/^def log_Cubic_interpolate(xx,yy):$/;"	f
+mass_len	fgresidual.py	/^mass_len=50$/;"	v
+matplotlib	fgresidual.py	/^from matplotlib import rc # latex in matplotlib$/;"	i
+noise_dls2cls	fgresidual.py	/^def noise_dls2cls(dls):$/;"	f
+np	fgresidual.py	/^import numpy as np$/;"	i
+npzdata	fgresidual.py	/^npzdata=np.load('derivative_data.npz')$/;"	v
+ns_0	fgresidual.py	/^ns_0 = 0.9665 #scalar_spectral_index(1)$/;"	v
+ns_CLprime	fgresidual.py	/^ns_CLprime=npzdata['ns_CLprime']$/;"	v
+ns_prime	fgresidual.py	/^def ns_prime():$/;"	f
+ombh2_0	fgresidual.py	/^ombh2_0 = 0.02242$/;"	v
+ombh2_CLprime	fgresidual.py	/^ombh2_CLprime=npzdata['ombh2_CLprime']$/;"	v
+ombh2_prime	fgresidual.py	/^def ombh2_prime():$/;"	f
+omch2_0	fgresidual.py	/^omch2_0 = 0.11933$/;"	v
+omch2_CLprime	fgresidual.py	/^omch2_CLprime=npzdata['omch2_CLprime']$/;"	v
+omch2_prime	fgresidual.py	/^def omch2_prime():$/;"	f
+optical_depth_0	fgresidual.py	/^optical_depth_0 = 0.0561 # re_optical_depth$/;"	v
+optical_depth_CLprime	fgresidual.py	/^optical_depth_CLprime=npzdata['optical_depth_CLprime']$/;"	v
+optical_depth_prime	fgresidual.py	/^def optical_depth_prime():$/;"	f
+os	fgresidual.py	/^import os$/;"	i
+params_num	fgresidual.py	/^params_num=7$/;"	v
+pico_fg_res	fgresidual.py	/^def pico_fg_res():$/;"	f
+pico_noise_level	fgresidual.py	/^def pico_noise_level():$/;"	f
+plt	fgresidual.py	/^from matplotlib import pyplot as plt$/;"	i
+rc	fgresidual.py	/^from matplotlib import rc # latex in matplotlib$/;"	i
+re	fgresidual.py	/^import re$/;"	i
+set_As	fgresidual.py	/^def set_As(new_value):$/;"	f
+set_DM_Gamma	fgresidual.py	/^def set_DM_Gamma(new_value):$/;"	f
+set_DM_Pann	fgresidual.py	/^def set_DM_Pann(new_value):$/;"	f
+set_DM_mass	fgresidual.py	/^def set_DM_mass(new_value):$/;"	f
+set_hubble	fgresidual.py	/^def set_hubble(new_value):$/;"	f
+set_ns	fgresidual.py	/^def set_ns(new_value):$/;"	f
+set_ombh2	fgresidual.py	/^def set_ombh2(new_value):$/;"	f
+set_omch2	fgresidual.py	/^def set_omch2(new_value):$/;"	f
+set_optical_depth	fgresidual.py	/^def set_optical_depth(new_value):$/;"	f
+sys	fgresidual.py	/^import sys$/;"	i
+thetastarmc_0	fgresidual.py	/^thetastarmc_0=1.040997$/;"	v
+thetastarmc_CLprime	fgresidual.py	/^thetastarmc_CLprime=npzdata['thetastarmc_CLprime']$/;"	v
+thetastarmc_prime	fgresidual.py	/^def thetastarmc_prime():$/;"	f
+time	fgresidual.py	/^import time$/;"	i
+time_0	fgresidual.py	/^time_0=time.time()$/;"	v

@@ -1,0 +1,70 @@
+2.728
+0.6766
+0.0490
+0.3111
+0.6889
+0.24
+2.046
+
+1.
+1.
+0
+0
+1e2
+1e15
+0
+
+no
+hyrec_spectrum.dat
+900.
+1600.
+8
+
+yes
+hyrec_21cm_DM.dat
+10.
+500.
+1000
+
+
+=====================================================================
+Input parameter file for Hyrec (default values given by Planck 2018 LCDM).
+The parameters have to be entered in the order shown, and 
+correspond to the following inputs
+=====================================================================
+
+2.728    = T0                        CMB temperature today, in K
+0.6766   = h                         H0/(100 km/s/Mpc)
+0.0490   = Omega_b                   baryon density parameter
+0.3111   = Omega_m                   matter (baryon + CDM) density parameter
+0.6889   = Omega_Lambda              cosmological constant density parameter 
+0.24     = Y_He                      Helium mass fraction 
+2.04     = Nnu_eff                   effective number of massless neutrinos
+
+1.       = alpha(rec)/alpha(today)   ratio of fine structure constant at recombination to today's value
+1.       = me(rec)/me(today)         ratio of electron mass at recombination to today's value
+0.       = pann = f<sigma v>/m_DM    dark matter annihilation parameter, in cm^3/s/GeV
+1.e-35   = dm_gamma                  dark matter decay parameter, in 1/s
+1.e10    = dm_mass		     Dark matter mass in GeV
+1.e16    = bh_mass		     Black hole mass in grams
+0.5      = dm_bh_frac		     Fraction of dark matter mass that is black hole
+
+
+yes      = either "yes" or "no".
+           if yes, spectrum in the Lyman line is printed to the file below,
+           for Nz redshifts linearly spaced between zmin and zmax
+hyrec_spectrum.dat  = file name
+900.     = zmin 
+1600.    = zmax
+8        = Nz
+
+yes      = either "yes" or "no"
+           if yes, compute 21cm spin and brightness temperatures
+           for Nz redshifts linearly spaced between zmin and zmax
+hyrec_21cm.dat = file name
+10.      = zmin
+500.     = zmax 
+1000     = Nz 
+ 
+ 
+
