@@ -3,13 +3,6 @@ from setparams import * # Because numerical derivative need C_l at different par
 from consts import * # In addition, fiducial values are also needed
 import os
 
-def initial_totCL():
-    os.system('./camb test.ini')
-    test_scalCls=np.loadtxt('./test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
-    insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
-    dlsn=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-    clsn=dls2cls(dlsn,ells)
-    return clsn
 
 def dls2cls(dls,ells):
     cls=np.zeros((ells,3))
@@ -17,6 +10,14 @@ def dls2cls(dls,ells):
         for l in np.arange(2,ells):
             cls[l,i]=dls[l,i]*(2*np.pi)/(l*(l+1))
     return cls
+
+def initial_totCL():
+    os.system('./camb test.ini')
+    test_scalCls=np.loadtxt('./test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
+    insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
+    dlsn=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
+    clsn=dls2cls(dlsn,ells)
+    return clsn
 
 def DM_Pann_prime(DM_mass,ells,length,start_footstep,end_footstep):
     set_DM_mass(DM_mass)
@@ -78,8 +79,6 @@ def DM_Pann_prime(DM_mass,ells,length,start_footstep,end_footstep):
     DM_Pann_CLprime=dp[:,:,best_h]
     set_DM_Pann(0)
     return xcordinate,dp,ls,min_step_mat,DM_Pann_CLprime
-
-# xcordinate,dp,ls,min_step_mat,DM_Pann_CLprime=DM_Pann_prime(DM_mass_0,ells,length=30,start_footstep=1e-26,end_footstep=1e-31)
 
 def DM_Gamma_prime(DM_mass,ells,length,start_footstep,end_footstep):
     set_DM_mass(DM_mass)
@@ -143,8 +142,6 @@ def DM_Gamma_prime(DM_mass,ells,length,start_footstep,end_footstep):
     set_DM_Gamma(0)
     return xcordinate,dp,ls,min_step_mat,DM_Gamma_CLprime
 
-# xcordinate,dp,ls,min_step_mat,DM_Gamma_CLprime=DM_Gamma_prime(DM_mass_0, ells, length=30, start_footstep=1e-24, end_footstep=1e-31)
-
 def thetastarmc_prime(hubble_0,ells,length,start_footstep,end_footstep):
     ls=np.arange(ells)
     xcordinate=np.geomspace(start_footstep,end_footstep,length)
@@ -198,8 +195,6 @@ def thetastarmc_prime(hubble_0,ells,length,start_footstep,end_footstep):
     set_hubble(hubble_0)
     return xcordinate,dp,ls,min_step_mat,thetastarmc_CLprime
 
-# xcordinate,dp,ls,min_step_mat,thetastarmc_CLprime=thetastarmc_prime(hubble_0, ells, length=30, start_footstep=2e-1, end_footstep=1e-4)
-
 #derivative against ombh2
 def ombh2_prime(ombh2_0,ells,length,start_footstep,end_footstep):
     ls=np.arange(ells)
@@ -248,8 +243,6 @@ def ombh2_prime(ombh2_0,ells,length,start_footstep,end_footstep):
     set_ombh2(ombh2_0)
     return xcordinate,dp,ls,min_step_mat,ombh2_CLprime
 
-# xcordinate,dp,ls,min_step_mat,ombh2_CLprime=ombh2_prime()
-
 def omch2_prime(omch2_0,ells,length,start_footstep,end_footstep):
     ls=np.arange(ells)
     xcordinate=np.geomspace(start_footstep,end_footstep,length)
@@ -297,8 +290,6 @@ def omch2_prime(omch2_0,ells,length,start_footstep,end_footstep):
     set_omch2(omch2_0)
     return xcordinate,dp,ls,min_step_mat,omch2_CLprime
 
-# xcordinate,dp,ls,min_step_mat,omch2_CLprime=omch2_prime()
-
 def optical_depth_prime(optical_depth_0,ells,length,start_footstep,end_footstep):
     ls=np.arange(ells)
     xcordinate=np.geomspace(start_footstep,end_footstep,length)
@@ -345,8 +336,6 @@ def optical_depth_prime(optical_depth_0,ells,length,start_footstep,end_footstep)
     optical_depth_CLprime=dp[:,:,best_h]
     set_optical_depth(optical_depth_0)
     return xcordinate,dp,ls,min_step_mat,optical_depth_CLprime
-
-# xcordinate,dp,ls,min_step_mat,optical_depth_CLprime=optical_depth_prime()
 
 def ns_prime(ns_0,ells,length,start_footstep,end_footstep):
     ls=np.arange(ells)
@@ -442,8 +431,6 @@ def As_prime(As_0,ells,length,start_footstep,end_footstep):
     set_As(As_0)
     return xcordinate,dp,ls,min_step_mat,As_CLprime
 
-# xcordinate,dp,ls,min_step_mat,As_CLprime=As_prime()
-
 def DM_mass_prime():
     ls=np.arange(ells)
     length=30
@@ -494,8 +481,6 @@ def DM_mass_prime():
     set_DM_mass(DM_mass_0)
     return dp,ls,xcordinate,min_step_mat,DM_mass_CLprime
 
-# dp,ls,xcordinate,min_step_mat,DM_mass_CLprime=DM_mass_prime()
-
 def checksave_pd_stability(xcordinate,dp,ls,min_step_mat,CLprime,filename):
     from matplotlib import pyplot as plt
     fig, axs = plt.subplots(3, 3)
@@ -529,15 +514,15 @@ def check_pd_stability(xcordinate,dp,ls,min_step_mat,CLprime):
     axs[2,2].loglog(xcordinate,np.absolute(dp[3000,2,:]))
     plt.savefig(filename,dpi=300)
 
+def plot_cls_invariant_scale(ls,cls):
+    from matplotlib import pyplot as plt
+    fig, axs = plt.subplots(3,1)
+    axs[0].loglog(ls,ls*ls*cls[:,0]) # TT
+    axs[1].semilogx(ls,ls*ls*cls[:,1]) # EE
+    axs[2].semilogx(ls,ls*ls*cls[:,2]) # TE
+    plt.show()
 
-if __name__=="__main__":
-    from setparams import *
-    from consts import *
-
-    print(os.getcwd())
-    os.chdir("../")
-    print(os.getcwd())
-
+def set_all_params():
     set_l_max_scalar(ells-1)
     set_hubble(hubble_0)
     set_ombh2(ombh2_0)
@@ -549,6 +534,14 @@ if __name__=="__main__":
     set_DM_Gamma(DM_Gamma_0)
     set_DM_mass(DM_mass_0)
     show_all_params()
+
+if __name__=="__main__":
+
+    print(os.getcwd())
+    os.chdir("../")
+    print(os.getcwd())
+
+    set_all_params()
 
     # xcordinate,dp,ls,min_step_mat,DM_Pann_CLprime=DM_Pann_prime(DM_mass_0, ells, length=30, start_footstep=1e-26,end_footstep=1e-31)
     # check_pd_stability(xcordinate, dp, ls, min_step_mat, DM_Pann_CLprime)
@@ -573,3 +566,7 @@ if __name__=="__main__":
 
 #     xcordinate,dp,ls,min_step_mat,As_CLprime=As_prime(As_0, ells, length=30, start_footstep=1e-1, end_footstep=1e-7)
 #     check_pd_stability(xcordinate, dp, ls, min_step_mat, As_CLprime)
+
+    ls=np.arange(ells)
+    cls=initial_totCL()
+    plot_cls_invariant_scale(ls, cls)
