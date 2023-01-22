@@ -12,3 +12,22 @@ thetastarmc_0=1.040997
 params_num=7
 ells=4001
 
+def show_all_params():
+    print(f"fiducial values are:")
+    print(f"ombh2_0={ombh2_0}")
+    print(f"omch2_0={omch2_0}")
+    print(f"As_0={As_0}")
+    print(f"ns_0={ns_0}")
+    print(f"optical_depth_0={optical_depth_0}")
+    print(f"hubble_0={hubble_0}")
+    print(f"thetastarmc_0={thetastarmc_0}")
+    print(f"DM_Pann_0={DM_Pann_0}")
+    print(f"DM_Gamma_0={DM_Gamma_0}")
+    print(f"DM_mass_0={DM_mass_0}")
+    print(f"ells={ells}")
+    print(f"parameter_number={params_num}")
+
+if __name__=="__main__":
+    show_all_params()
+
+

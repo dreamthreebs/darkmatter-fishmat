@@ -1,5 +1,6 @@
 import numpy as np
-from setparams import *
+from setparams import * # Because numerical derivative need C_l at different params
+from consts import * # In addition, fiducial values are also needed
 import os
 
 def initial_totCL():
@@ -7,7 +8,7 @@ def initial_totCL():
     test_scalCls=np.loadtxt('./test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
     insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
     dlsn=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-    clsn=dls2cls(dlsn)
+    clsn=dls2cls(dlsn,ells)
     return clsn
 
 def dls2cls(dls,ells):
@@ -80,16 +81,12 @@ def DM_Pann_prime(DM_mass,ells,length,start_footstep,end_footstep):
 
 # xcordinate,dp,ls,min_step_mat,DM_Pann_CLprime=DM_Pann_prime(DM_mass_0,ells,length=30,start_footstep=1e-26,end_footstep=1e-31)
 
-def DM_Gamma_prime(params_value):
-    set_DM_mass(params_value)
+def DM_Gamma_prime(DM_mass,ells,length,start_footstep,end_footstep):
+    set_DM_mass(DM_mass)
     set_DM_Pann(0)
     set_DM_Gamma(0)
     DM_Gamma_0=0
-    length=30
-    start_footstep=1e-24
-    end_footstep=1e-31
     xcordinate=np.geomspace(start_footstep,end_footstep,length)
-    index=0
     dp=np.zeros((ells,3,length))
     difference=np.ones((ells,3,length))
     DM_Gamma_CLprime=np.zeros((ells,3))
@@ -100,16 +97,16 @@ def DM_Gamma_prime(params_value):
     test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
     insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
     dlsn=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-    clsn=dls2cls(dlsn)
+    clsn=dls2cls(dlsn,ells)
     
-    for h in xcordinate:
+    for index,h in enumerate(xcordinate):
         x2=DM_Gamma_0+h
         set_DM_Gamma(x2)
         os.system('./camb test.ini')
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         dlsp=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        clsp=dls2cls(dlsp)
+        clsp=dls2cls(dlsp,ells)
         dp[:,:,index]=(clsp-clsn)/h
         for i in np.arange(3):#i is powerspectrum index
             for l in np.arange(2,ells):
@@ -119,7 +116,6 @@ def DM_Gamma_prime(params_value):
                     else:
                         difference[l,i,index]=1.0
         print('loop=',index)
-        index+=1
     '''
         show dp(derivative against params) at different footstep to find stable point
     '''
@@ -136,7 +132,7 @@ def DM_Gamma_prime(params_value):
             sum+=minimum_step[0][0]
             print('best h is',xcordinate[minimum_step],'at l=',l,'on spectrum',i,'difference=',minimum)
     best_h=round(sum/((ells-2)*3))
-    print(best_h)
+    print("best footstep is:",best_h,'where h=',xcordinate[best_h])
     set_DM_Gamma(xcordinate[best_h])
     os.system('./camb test.ini')
     test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))
@@ -147,21 +143,17 @@ def DM_Gamma_prime(params_value):
     set_DM_Gamma(0)
     return xcordinate,dp,ls,min_step_mat,DM_Gamma_CLprime
 
-# xcordinate,dp,ls,min_step_mat,DM_Gamma_CLprime=DM_Gamma_prime(DM_mass_0)
+# xcordinate,dp,ls,min_step_mat,DM_Gamma_CLprime=DM_Gamma_prime(DM_mass_0, ells, length=30, start_footstep=1e-24, end_footstep=1e-31)
 
-def thetastarmc_prime():
+def thetastarmc_prime(hubble_0,ells,length,start_footstep,end_footstep):
     ls=np.arange(ells)
-    length=30
-    start_footstep=2e-1
-    end_footstep=1e-4
     xcordinate=np.geomspace(start_footstep,end_footstep,length)
     thetastar_tmp=np.zeros((length*2,1))
     hubble_tmp=np.zeros((length*2,1))
     dp=np.zeros((ells,3,length))
     difference=np.ones((ells,3,length))
     thetastarmc_CLprime=np.zeros((ells,3))
-    index=0
-    for h in xcordinate:
+    for index,h in enumerate(xcordinate):
         x1=hubble_0-h*hubble_0
         x2=hubble_0+h*hubble_0
         hubble_tmp[index]=x1
@@ -172,14 +164,14 @@ def thetastarmc_prime():
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         DL_n=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        CL_n=dls2cls(DL_n)
+        CL_n=dls2cls(DL_n,ells)
         set_hubble(x2)
         os.system('./camb test.ini | grep "100 theta" >output.txt')
         thetastar_tmp[2*length-index-1]=get_thetastarmc_from_files()
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         DL_p=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        CL_p=dls2cls(DL_p)
+        CL_p=dls2cls(DL_p,ells)
         dp[:,:,index]=(CL_p-CL_n)/(thetastar_tmp[2*length-index-1]-thetastar_tmp[index])
         for i in np.arange(3):#i is powerspectrum index
             for l in np.arange(2,ells):
@@ -188,7 +180,6 @@ def thetastarmc_prime():
                         difference[l,i,index]=np.absolute((dp[l,i,index-1]-dp[l,i,index]))/(np.absolute(dp[l,i,index-1]))
                     else:
                         difference[l,i,index]=1.0
-        index+=1
         print(index)
     sum=0
     min_step_mat=np.zeros((ells,3))
@@ -202,25 +193,21 @@ def thetastarmc_prime():
             sum+=minimum_step[0][0]
             print('best h is',xcordinate[minimum_step],'at l=',l,'on spectrum',i,'difference=',minimum)
     best_h=round(sum/((ells-2)*3))
-    print(best_h) # for this parameter, 10 as best_h is better, around 1.45e-2 
-    thetastarmc_CLprime=dp[:,:,10]
+    print("best_h is:",best_h,"where h is:",xcordinate[best_h] ) # for this parameter, 10 as best_h is better, around 1.45e-2 
+    thetastarmc_CLprime=dp[:,:,best_h]
     set_hubble(hubble_0)
-    return thetastarmc_CLprime
+    return xcordinate,dp,ls,min_step_mat,thetastarmc_CLprime
 
-# thetastarmc_CLprime=thetastarmc_prime()
+# xcordinate,dp,ls,min_step_mat,thetastarmc_CLprime=thetastarmc_prime(hubble_0, ells, length=30, start_footstep=2e-1, end_footstep=1e-4)
 
 #derivative against ombh2
-def ombh2_prime():
+def ombh2_prime(ombh2_0,ells,length,start_footstep,end_footstep):
     ls=np.arange(ells)
-    length=30
-    start_footstep=1e-1
-    end_footstep=1e-7
     xcordinate=np.geomspace(start_footstep,end_footstep,length)
     dp=np.zeros((ells,3,length))
     difference=np.ones((ells,3,length))
     ombh2_CLprime=np.zeros((ells,3))
-    index=0
-    for h in xcordinate:
+    for index,h in enumerate(xcordinate):
         x1=ombh2_0-h*ombh2_0
         x2=ombh2_0+h*ombh2_0
         set_ombh2(x1)
@@ -228,13 +215,13 @@ def ombh2_prime():
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         DL_n=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        CL_n=dls2cls(DL_n)
+        CL_n=dls2cls(DL_n,ells)
         set_ombh2(x2)
         os.system('./camb test.ini')
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         DL_p=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        CL_p=dls2cls(DL_p)
+        CL_p=dls2cls(DL_p,ells)
         dp[:,:,index]=(CL_p-CL_n)/(2*h*ombh2_0)
         for i in np.arange(3):#i is powerspectrum index
             for l in np.arange(2,ells):
@@ -243,7 +230,6 @@ def ombh2_prime():
                         difference[l,i,index]=np.absolute((dp[l,i,index-1]-dp[l,i,index]))/(np.absolute(dp[l,i,index-1]))
                     else:
                         difference[l,i,index]=1.0
-        index+=1
         print(index)
     sum=0
     min_step_mat=np.zeros((ells,3))
@@ -257,24 +243,20 @@ def ombh2_prime():
             sum+=minimum_step[0][0]
             print('best h is',xcordinate[minimum_step],'at l=',l,'on spectrum',i,'difference=',minimum)
     best_h=round(sum/((ells-2)*3))
-    print(best_h) # for this parameter, 10 as best_h is better, around 1.45e-2 
+    print('best stepsize=',best_h,'where h=',xcordinate[best_h])
     ombh2_CLprime=dp[:,:,best_h]
     set_ombh2(ombh2_0)
-    return ombh2_CLprime
+    return xcordinate,dp,ls,min_step_mat,ombh2_CLprime
 
-# ombh2_CLprime=ombh2_prime()
+# xcordinate,dp,ls,min_step_mat,ombh2_CLprime=ombh2_prime()
 
-def omch2_prime():
+def omch2_prime(omch2_0,ells,length,start_footstep,end_footstep):
     ls=np.arange(ells)
-    length=30
-    start_footstep=1e-1
-    end_footstep=1e-7
     xcordinate=np.geomspace(start_footstep,end_footstep,length)
     dp=np.zeros((ells,3,length))
     difference=np.ones((ells,3,length))
     omch2_CLprime=np.zeros((ells,3))
-    index=0
-    for h in xcordinate:
+    for index,h in enumerate(xcordinate):
         x1=omch2_0-h*omch2_0
         x2=omch2_0+h*omch2_0
         set_omch2(x1)
@@ -282,13 +264,13 @@ def omch2_prime():
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         DL_n=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        CL_n=dls2cls(DL_n)
+        CL_n=dls2cls(DL_n,ells)
         set_omch2(x2)
         os.system('./camb test.ini')
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         DL_p=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        CL_p=dls2cls(DL_p)
+        CL_p=dls2cls(DL_p,ells)
         dp[:,:,index]=(CL_p-CL_n)/(2*h*omch2_0)
         for i in np.arange(3):#i is powerspectrum index
             for l in np.arange(2,ells):
@@ -297,7 +279,6 @@ def omch2_prime():
                         difference[l,i,index]=np.absolute((dp[l,i,index-1]-dp[l,i,index]))/(np.absolute(dp[l,i,index-1]))
                     else:
                         difference[l,i,index]=1.0
-        index+=1
         print(index)
     sum=0
     min_step_mat=np.zeros((ells,3))
@@ -311,24 +292,20 @@ def omch2_prime():
             sum+=minimum_step[0][0]
             print('best h is',xcordinate[minimum_step],'at l=',l,'on spectrum',i,'difference=',minimum)
     best_h=round(sum/((ells-2)*3))
-    print(best_h) # for this parameter, 10 as best_h is better, around 1.45e-2 
+    print('best stepsize=',best_h,'where h=',xcordinate[best_h])
     omch2_CLprime=dp[:,:,best_h]
     set_omch2(omch2_0)
-    return omch2_CLprime
+    return xcordinate,dp,ls,min_step_mat,omch2_CLprime
 
-# omch2_CLprime=omch2_prime()
+# xcordinate,dp,ls,min_step_mat,omch2_CLprime=omch2_prime()
 
-def optical_depth_prime():
+def optical_depth_prime(optical_depth_0,ells,length,start_footstep,end_footstep):
     ls=np.arange(ells)
-    length=30
-    start_footstep=1e-1
-    end_footstep=1e-4
     xcordinate=np.geomspace(start_footstep,end_footstep,length)
     dp=np.zeros((ells,3,length))
     difference=np.ones((ells,3,length))
     optical_depth_CLprime=np.zeros((ells,3))
-    index=0
-    for h in xcordinate:
+    for index,h in enumerate(xcordinate):
         x1=optical_depth_0-h*optical_depth_0
         x2=optical_depth_0+h*optical_depth_0
         set_optical_depth(x1)
@@ -336,13 +313,13 @@ def optical_depth_prime():
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         DL_n=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        CL_n=dls2cls(DL_n)
+        CL_n=dls2cls(DL_n,ells)
         set_optical_depth(x2)
         os.system('./camb test.ini')
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         DL_p=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        CL_p=dls2cls(DL_p)
+        CL_p=dls2cls(DL_p,ells)
         dp[:,:,index]=(CL_p-CL_n)/(2*h*optical_depth_0)
         for i in np.arange(3):#i is powerspectrum index
             for l in np.arange(2,ells):
@@ -351,7 +328,6 @@ def optical_depth_prime():
                         difference[l,i,index]=np.absolute((dp[l,i,index-1]-dp[l,i,index]))/(np.absolute(dp[l,i,index-1]))
                     else:
                         difference[l,i,index]=1.0
-        index+=1
         print(index)
     sum=0
     min_step_mat=np.zeros((ells,3))
@@ -365,24 +341,20 @@ def optical_depth_prime():
             sum+=minimum_step[0][0]
             print('best h is',xcordinate[minimum_step],'at l=',l,'on spectrum',i,'difference=',minimum)
     best_h=round(sum/((ells-2)*3))
-    print(best_h) # for this parameter, 10 as best_h is better, around 1.45e-2 
+    print("best_h is:",best_h,'where h=',xcordinate[best_h])
     optical_depth_CLprime=dp[:,:,best_h]
     set_optical_depth(optical_depth_0)
-    return optical_depth_CLprime
+    return xcordinate,dp,ls,min_step_mat,optical_depth_CLprime
 
-# optical_depth_CLprime=optical_depth_prime()
+# xcordinate,dp,ls,min_step_mat,optical_depth_CLprime=optical_depth_prime()
 
-def ns_prime():
+def ns_prime(ns_0,ells,length,start_footstep,end_footstep):
     ls=np.arange(ells)
-    length=30
-    start_footstep=1e-1
-    end_footstep=1e-7
     xcordinate=np.geomspace(start_footstep,end_footstep,length)
     dp=np.zeros((ells,3,length))
     difference=np.ones((ells,3,length))
     ns_CLprime=np.zeros((ells,3))
-    index=0
-    for h in xcordinate:
+    for index,h in enumerate(xcordinate):
         x1=ns_0-h*ns_0
         x2=ns_0+h*ns_0
         set_ns(x1)
@@ -390,13 +362,13 @@ def ns_prime():
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         DL_n=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        CL_n=dls2cls(DL_n)
+        CL_n=dls2cls(DL_n,ells)
         set_ns(x2)
         os.system('./camb test.ini')
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         DL_p=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        CL_p=dls2cls(DL_p)
+        CL_p=dls2cls(DL_p,ells)
         dp[:,:,index]=(CL_p-CL_n)/(2*h*ns_0)
         for i in np.arange(3):#i is powerspectrum index
             for l in np.arange(2,ells):
@@ -405,7 +377,6 @@ def ns_prime():
                         difference[l,i,index]=np.absolute((dp[l,i,index-1]-dp[l,i,index]))/(np.absolute(dp[l,i,index-1]))
                     else:
                         difference[l,i,index]=1.0
-        index+=1
         print(index)
     sum=0
     min_step_mat=np.zeros((ells,3))
@@ -419,24 +390,18 @@ def ns_prime():
             sum+=minimum_step[0][0]
             print('best h is',xcordinate[minimum_step],'at l=',l,'on spectrum',i,'difference=',minimum)
     best_h=round(sum/((ells-2)*3))
-    print(best_h) # for this parameter, 10 as best_h is better, around 1.45e-2 
+    print("best_h is:",best_h,'where h=',xcordinate[best_h])
     ns_CLprime=dp[:,:,best_h]
     set_ns(ns_0)
-    return ns_CLprime
+    return xcordinate,dp,ls,min_step_mat,ns_CLprime
 
-# ns_CLprime=ns_prime()
-
-def As_prime():
+def As_prime(As_0,ells,length,start_footstep,end_footstep):
     ls=np.arange(ells)
-    length=30
-    start_footstep=1e-1
-    end_footstep=1e-7
     xcordinate=np.geomspace(start_footstep,end_footstep,length)
     dp=np.zeros((ells,3,length))
     difference=np.ones((ells,3,length))
     As_CLprime=np.zeros((ells,3))
-    index=0
-    for h in xcordinate:
+    for index,h in enumerate(xcordinate):
         x1=1e-10*np.exp((1-h)*np.log(1e10*As_0))
         x2=1e-10*np.exp((1+h)*np.log(1e10*As_0))
         set_As(x1)
@@ -444,13 +409,13 @@ def As_prime():
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         DL_n=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        CL_n=dls2cls(DL_n)
+        CL_n=dls2cls(DL_n,ells)
         set_As(x2)
         os.system('./camb test.ini')
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         DL_p=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        CL_p=dls2cls(DL_p)
+        CL_p=dls2cls(DL_p,ells)
         dp[:,:,index]=(CL_p-CL_n)/(np.log(1e10*x2)-np.log(1e10*x1))
         for i in np.arange(3):#i is powerspectrum index
             for l in np.arange(2,ells):
@@ -459,7 +424,6 @@ def As_prime():
                         difference[l,i,index]=np.absolute((dp[l,i,index-1]-dp[l,i,index]))/(np.absolute(dp[l,i,index-1]))
                     else:
                         difference[l,i,index]=1.0
-        index+=1
         print(index)
     sum=0
     min_step_mat=np.zeros((ells,3))
@@ -473,12 +437,12 @@ def As_prime():
             sum+=minimum_step[0][0]
             print('best h is',xcordinate[minimum_step],'at l=',l,'on spectrum',i,'difference=',minimum)
     best_h=round(sum/((ells-2)*3))
-    print(best_h) # for this parameter, 10 as best_h is better, around 1.45e-2 
+    print("best_h is:",best_h,'where h=',xcordinate[best_h])
     As_CLprime=dp[:,:,best_h]
     set_As(As_0)
-    return As_CLprime
+    return xcordinate,dp,ls,min_step_mat,As_CLprime
 
-# As_CLprime=As_prime()
+# xcordinate,dp,ls,min_step_mat,As_CLprime=As_prime()
 
 def DM_mass_prime():
     ls=np.arange(ells)
@@ -489,8 +453,7 @@ def DM_mass_prime():
     dp=np.zeros((ells,3,length))
     difference=np.ones((ells,3,length))
     DM_mass_CLprime=np.zeros((ells,3))
-    index=0
-    for h in xcordinate:
+    for index,h in enumerate(xcordinate):
         x1=(1-h)*DM_mass_0
         x2=(1+h)*DM_mass_0
         set_DM_mass(x1)
@@ -498,13 +461,13 @@ def DM_mass_prime():
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         DL_n=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        CL_n=dls2cls(DL_n)
+        CL_n=dls2cls(DL_n,ells)
         set_DM_mass(x2)
         os.system('./camb test.ini')
         test_scalCls=np.loadtxt('test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
         insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
         DL_p=np.insert(test_scalCls,0,insert_first_two_rows,axis=0)
-        CL_p=dls2cls(DL_p)
+        CL_p=dls2cls(DL_p,ells)
         dp[:,:,index]=(CL_p-CL_n)/(2*h*DM_mass_0)
         for i in np.arange(3):#i is powerspectrum index
             for l in np.arange(2,ells):
@@ -513,7 +476,6 @@ def DM_mass_prime():
                         difference[l,i,index]=np.absolute((dp[l,i,index-1]-dp[l,i,index]))/(np.absolute(dp[l,i,index-1]))
                     else:
                         difference[l,i,index]=1.0
-        index+=1
         print(index)
     sum=0
     min_step_mat=np.zeros((ells,3))
@@ -527,12 +489,46 @@ def DM_mass_prime():
             sum+=minimum_step[0][0]
             print('best h is',xcordinate[minimum_step],'at l=',l,'on spectrum',i,'difference=',minimum)
     best_h=round(sum/((ells-2)*3))
-    print(best_h) # for this parameter, 10 as best_h is better, around 1.45e-2 
+    print("best_h is:",best_h,'where h=',xcordinate[best_h])
     DM_mass_CLprime=dp[:,:,best_h]
     set_DM_mass(DM_mass_0)
     return dp,ls,xcordinate,min_step_mat,DM_mass_CLprime
 
 # dp,ls,xcordinate,min_step_mat,DM_mass_CLprime=DM_mass_prime()
+
+def checksave_pd_stability(xcordinate,dp,ls,min_step_mat,CLprime,filename):
+    from matplotlib import pyplot as plt
+    fig, axs = plt.subplots(3, 3)
+    axs[0,0].plot(ls[2:],min_step_mat[2:,0])
+    axs[0,1].plot(ls[2:],min_step_mat[2:,1])
+    axs[0,2].plot(ls[2:],min_step_mat[2:,2])
+
+    axs[1,0].semilogx(ls[2:],ls[2:]*ls[2:]*CLprime[2:,0])
+    axs[1,1].semilogx(ls[2:],ls[2:]*ls[2:]*CLprime[2:,1])
+    axs[1,2].semilogx(ls[2:],ls[2:]*ls[2:]*CLprime[2:,2])
+
+    axs[2,0].loglog(xcordinate,np.absolute(dp[3000,0,:]))
+    axs[2,1].loglog(xcordinate,np.absolute(dp[3000,1,:]))
+    axs[2,2].loglog(xcordinate,np.absolute(dp[3000,2,:]))
+    plt.savefig(filename,dpi=300)
+    plt.close()
+
+def check_pd_stability(xcordinate,dp,ls,min_step_mat,CLprime):
+    from matplotlib import pyplot as plt
+    fig, axs = plt.subplots(3, 3)
+    axs[0,0].plot(ls[2:],min_step_mat[2:,0])
+    axs[0,1].plot(ls[2:],min_step_mat[2:,1])
+    axs[0,2].plot(ls[2:],min_step_mat[2:,2])
+
+    axs[1,0].semilogx(ls[2:],ls[2:]*ls[2:]*CLprime[2:,0])
+    axs[1,1].semilogx(ls[2:],ls[2:]*ls[2:]*CLprime[2:,1])
+    axs[1,2].semilogx(ls[2:],ls[2:]*ls[2:]*CLprime[2:,2])
+
+    axs[2,0].loglog(xcordinate,np.absolute(dp[3000,0,:]))
+    axs[2,1].loglog(xcordinate,np.absolute(dp[3000,1,:]))
+    axs[2,2].loglog(xcordinate,np.absolute(dp[3000,2,:]))
+    plt.savefig(filename,dpi=300)
+
 
 if __name__=="__main__":
     from setparams import *
@@ -552,12 +548,28 @@ if __name__=="__main__":
     set_DM_Pann(DM_Pann_0)
     set_DM_Gamma(DM_Gamma_0)
     set_DM_mass(DM_mass_0)
+    show_all_params()
 
+    # xcordinate,dp,ls,min_step_mat,DM_Pann_CLprime=DM_Pann_prime(DM_mass_0, ells, length=30, start_footstep=1e-26,end_footstep=1e-31)
+    # check_pd_stability(xcordinate, dp, ls, min_step_mat, DM_Pann_CLprime)
 
-    # xcordinate,dp,ls,min_step_mat,DM_Pann_CLprime=DM_Pann_prime(DM_mass_0,ells,length=30,start_footstep=1e-26,end_footstep=1e-31)
+    # xcordinate,dp,ls,min_step_mat,DM_Gamma_CLprime=DM_Gamma_prime(DM_mass_0, ells, length=30, start_footstep=1e-24, end_footstep=1e-31)
+    # check_pd_stability(xcordinate, dp, ls, min_step_mat, DM_Gamma_CLprime)
 
+    # xcordinate,dp,ls,min_step_mat,thetastarmc_CLprime=thetastarmc_prime(hubble_0, ells, length=30, start_footstep=2e-1, end_footstep=1e-4)
+    # check_pd_stability(xcordinate, dp, ls, min_step_mat, thetastarmc_CLprime)
 
+    # xcordinate,dp,ls,min_step_mat,ombh2_CLprime=ombh2_prime(ombh2_0, ells, length=30, start_footstep=1e-1, end_footstep=1e-7)
+    # check_pd_stability(xcordinate, dp, ls, min_step_mat, ombh2_CLprime)
 
+    # xcordinate,dp,ls,min_step_mat,omch2_CLprime=omch2_prime(omch2_0, ells, length=30, start_footstep=1e-1, end_footstep=1e-7)
+    # check_pd_stability(xcordinate, dp, ls, min_step_mat, omch2_CLprime)
 
+    # xcordinate,dp,ls,min_step_mat,optical_depth_CLprime=optical_depth_prime(optical_depth_0, ells, length=30, start_footstep=1e-1, end_footstep=1e-4)
+    # check_pd_stability(xcordinate, dp, ls, min_step_mat, optical_depth_CLprime)
 
+    # xcordinate,dp,ls,min_step_mat,ns_CLprime=ns_prime(ns_0, ells, length=30, start_footstep=1e-1, end_footstep=1e-7)
+    # check_pd_stability(xcordinate, dp, ls, min_step_mat, ns_CLprime)
 
+#     xcordinate,dp,ls,min_step_mat,As_CLprime=As_prime(As_0, ells, length=30, start_footstep=1e-1, end_footstep=1e-7)
+#     check_pd_stability(xcordinate, dp, ls, min_step_mat, As_CLprime)
