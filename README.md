@@ -9,6 +9,6 @@ ifort(intel fortran), icc(intel c++), python(numpy, matplotlib, scipy)
 ./camb/plot/ : plot all figures and save in figure folder  
 ## How to use
 make Hyrec; make camb
-run ./camb/calc/getpd.py to get all pd data in ./camb/data/pd_data/*CLprime.npy  
-run ./camb/calc/getsig.py to get all one sigma error in ./camb/data/sigma_data/sigma*.npy  
-run ./camb/plot/plot*.py to get different figures of what you want  
+run ./camb/calc/getpd.py to get all pd data in ./camb/data/pd\_data/\*CLprime.npy  
+run ./camb/calc/getsig.py to get all one sigma error in ./camb/data/sigma\_data/sigma\*.npy  
+run ./camb/plot/plot\*.py to get different figures of what you want  
