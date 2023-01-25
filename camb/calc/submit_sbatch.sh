@@ -46,7 +46,8 @@
 # or use relative path
 # mpiexec python -u tod_gen4cc.py
 # mpirun -np 7 ./cosmomc test.ini
-# python as.py
-# mpiexec python -u tmp.py
-# mpiexec python -u dm_fsr_7params.py
-mpiexec python -u getpd.py
+
+# mpiexec python -u getpd.py
+# mpiexec python -u getsig.py
+# mpiexec python -u pdfunc.py
+mpiexec python -u sigfunc.py

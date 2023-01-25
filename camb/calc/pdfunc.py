@@ -12,6 +12,7 @@ def dls2cls(dls,ells):
     return cls
 
 def initial_totCL():
+    set_all_params()
     os.system('./camb test.ini')
     test_scalCls=np.loadtxt('./test_scalCls.dat',usecols=(1,2,3))#only read TT,EE,TE column data
     insert_first_two_rows=np.array([[0,0,0],[0,0,0]])#make dls range from 0 to lmax not 2(derived by camb)
@@ -67,7 +68,7 @@ def DM_Pann_prime(DM_mass,ells,length,start_footstep,end_footstep):
             min_step_mat[l,i]=minimum_step[0][0]
             DM_Pann_CLprime[l,i]=dp[l,i,minimum_step[0][0]]
             sum+=minimum_step[0][0]
-            print('best h is',xcordinate[minimum_step],'at l=',l,'on spectrum',i,'difference=',minimum)
+            # print('best h is',xcordinate[minimum_step],'at l=',l,'on spectrum',i,'difference=',minimum)
     best_h=round(sum/((ells-2)*3))
     print("best_step is:",best_h,'where h=',xcordinate[best_h])
     set_DM_Pann(xcordinate[best_h])
@@ -512,7 +513,7 @@ def check_pd_stability(xcordinate,dp,ls,min_step_mat,CLprime):
     axs[2,0].loglog(xcordinate,np.absolute(dp[3000,0,:]))
     axs[2,1].loglog(xcordinate,np.absolute(dp[3000,1,:]))
     axs[2,2].loglog(xcordinate,np.absolute(dp[3000,2,:]))
-    plt.savefig(filename,dpi=300)
+    plt.show()
 
 def plot_cls_invariant_scale(ls,cls):
     from matplotlib import pyplot as plt
@@ -535,6 +536,19 @@ def set_all_params():
     set_DM_mass(DM_mass_0)
     show_all_params()
 
+def calc_pd_pann_diff_mass(filename):
+    DM_mass_len=50
+    DM_mass_start=1e-5
+    DM_mass_end=5e3
+    DM_mass_set=np.geomspace(DM_mass_start,DM_mass_end,DM_mass_len)
+    pd_pann_diff_mass=np.zeros((ells,3,DM_mass_len))
+    for i, DM_mass in enumerate(DM_mass_set):
+        xcordinate,dp,ls,min_step_mat,DM_Pann_CLprime=DM_Pann_prime(DM_mass, ells, length=30, start_footstep=1e-26, end_footstep=1e-31)
+        pd_pann_diff_mass[:,:,i]=DM_Pann_CLprime
+    np.save(filename, pd_pann_diff_mass)
+
+
+
 if __name__=="__main__":
 
     print(os.getcwd())
@@ -543,7 +557,7 @@ if __name__=="__main__":
 
     set_all_params()
 
-    # xcordinate,dp,ls,min_step_mat,DM_Pann_CLprime=DM_Pann_prime(DM_mass_0, ells, length=30, start_footstep=1e-26,end_footstep=1e-31)
+    # xcordinate,dp,ls,min_step_mat,DM_Pann_CLprime=DM_Pann_prime(1e-5, ells, length=30, start_footstep=1e-26,end_footstep=1e-31)
     # check_pd_stability(xcordinate, dp, ls, min_step_mat, DM_Pann_CLprime)
 
     # xcordinate,dp,ls,min_step_mat,DM_Gamma_CLprime=DM_Gamma_prime(DM_mass_0, ells, length=30, start_footstep=1e-24, end_footstep=1e-31)
@@ -567,6 +581,9 @@ if __name__=="__main__":
 #     xcordinate,dp,ls,min_step_mat,As_CLprime=As_prime(As_0, ells, length=30, start_footstep=1e-1, end_footstep=1e-7)
 #     check_pd_stability(xcordinate, dp, ls, min_step_mat, As_CLprime)
 
-    ls=np.arange(ells)
-    cls=initial_totCL()
-    plot_cls_invariant_scale(ls, cls)
+#     ls=np.arange(ells)
+#     cls=initial_totCL()
+#     plot_cls_invariant_scale(ls, cls)
+
+
+    calc_pd_pann_diff_mass('./data/pd_pann_50_data/pd_pann_50_diff_mass.npy')
