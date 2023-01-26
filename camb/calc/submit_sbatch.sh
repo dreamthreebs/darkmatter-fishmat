@@ -48,6 +48,7 @@
 # mpirun -np 7 ./cosmomc test.ini
 
 # mpiexec python -u getpd.py
-# mpiexec python -u getsig.py
 # mpiexec python -u pdfunc.py
-mpiexec python -u sigfunc.py
+# mpiexec python -u sigfunc.py
+mpiexec python -u getsig.py
+

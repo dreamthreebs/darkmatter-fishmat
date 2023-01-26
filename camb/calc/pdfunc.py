@@ -2,6 +2,7 @@ import numpy as np
 from setparams import * # Because numerical derivative need C_l at different params
 from consts import * # In addition, fiducial values are also needed
 import os
+import datetime
 
 
 def dls2cls(dls,ells):
@@ -130,7 +131,7 @@ def DM_Gamma_prime(DM_mass,ells,length,start_footstep,end_footstep):
             min_step_mat[l][i]=minimum_step[0][0]
             DM_Gamma_CLprime[l,i]=dp[l,i,minimum_step[0][0]]
             sum+=minimum_step[0][0]
-            print('best h is',xcordinate[minimum_step],'at l=',l,'on spectrum',i,'difference=',minimum)
+            # print('best h is',xcordinate[minimum_step],'at l=',l,'on spectrum',i,'difference=',minimum)
     best_h=round(sum/((ells-2)*3))
     print("best footstep is:",best_h,'where h=',xcordinate[best_h])
     set_DM_Gamma(xcordinate[best_h])
@@ -547,6 +548,16 @@ def calc_pd_pann_diff_mass(filename):
         pd_pann_diff_mass[:,:,i]=DM_Pann_CLprime
     np.save(filename, pd_pann_diff_mass)
 
+def calc_pd_gamma_diff_mass(filename):
+    DM_mass_len=50
+    DM_mass_start=1.01e-5
+    DM_mass_end=5e3
+    DM_mass_set=np.geomspace(DM_mass_start,DM_mass_end,DM_mass_len)
+    pd_gamma_diff_mass=np.zeros((ells,3,DM_mass_len))
+    for i, DM_mass in enumerate(DM_mass_set):
+        xcordinate,dp,ls,min_step_mat,DM_Gamma_CLprime=DM_Gamma_prime(DM_mass, ells, length=30, start_footstep=1e-24, end_footstep=1e-31)
+        pd_gamma_diff_mass[:,:,i]=DM_Gamma_CLprime
+    np.save(filename, pd_gamma_diff_mass)
 
 
 if __name__=="__main__":
@@ -586,4 +597,8 @@ if __name__=="__main__":
 #     plot_cls_invariant_scale(ls, cls)
 
 
-    calc_pd_pann_diff_mass('./data/pd_pann_50_data/pd_pann_50_diff_mass.npy')
+    # calc_pd_pann_diff_mass('./data/pd_pann_50_data/pd_pann_50_diff_mass.npy')
+
+    calc_pd_gamma_diff_mass('./data/pd_gamma_50_data/pd_gamma_50_diff_mass.npy')
+    print(datetime.datetime.now())
+

@@ -281,14 +281,42 @@ def calc_pann_two_sigma_error_with_prior_pd_pann(cls,nls,fgres,ells,lmin,lmax,fs
         sig_Pann[i,3]=2*get_combined_fisher_matrix(pd_Pann, cls, nls, fgres, lmin, lmax, fsky)[params_num-1]
     np.save(filename,sig_Pann)
 
+def calc_gamma_two_sigma_error_with_prior_pd_gamma(cls,nls,fgres,ells,lmin,lmax,fsky,filename,pd_gamma_diff_mass):
+    # from matplotlib import pyplot as plt
+    thetastarmc_CLprime,ombh2_CLprime,omch2_CLprime,As_CLprime,ns_CLprime,optical_depth_CLprime=load_basic_6params_pd()
+    pd_Gamma=np.zeros((ells,3,params_num))
+    pd_Gamma[:,:,0]=ombh2_CLprime
+    pd_Gamma[:,:,1]=omch2_CLprime
+    pd_Gamma[:,:,2]=thetastarmc_CLprime
+    pd_Gamma[:,:,3]=optical_depth_CLprime
+    pd_Gamma[:,:,4]=ns_CLprime
+    pd_Gamma[:,:,5]=As_CLprime
+
+    mass_len=50
+    mass_start=1.01e-5
+    mass_end=5e3
+    dm_mass_set=np.geomspace(mass_start,mass_end,mass_len)
+
+    sig_Gamma=np.zeros((mass_len,4))
+    for i,DM_mass in enumerate(dm_mass_set):
+        print('this is loop:', i)
+        pd_Gamma[:,:,6]=pd_gamma_diff_mass[:,:,i]
+        sig_Gamma[i,0]=2*get_TT_fisher_matrix(pd_Gamma, cls, nls, fgres, lmin, lmax, fsky)[params_num-1]
+        sig_Gamma[i,1]=2*get_EE_fisher_matrix(pd_Gamma, cls, nls, fgres, lmin, lmax, fsky)[params_num-1]
+        sig_Gamma[i,2]=2*get_TE_fisher_matrix(pd_Gamma, cls, nls, fgres, lmin, lmax, fsky)[params_num-1]
+        sig_Gamma[i,3]=2*get_combined_fisher_matrix(pd_Gamma, cls, nls, fgres, lmin, lmax, fsky)[params_num-1]
+    np.save(filename,sig_Gamma)
+
 
 
 if __name__=="__main__":
-    print(os.getcwd())
-    os.chdir("../")
-    print(os.getcwd())
 
-    # set_all_params()
+    print(datetime.datetime.now())
+    print("file position:",os.getcwd())
+    os.chdir("../")
+    print("work position",os.getcwd())
+
+    set_all_params()
     # check_all_pd()
 
     # check_fisher_pann()
@@ -298,34 +326,37 @@ if __name__=="__main__":
 
     # pd_pann_diff_mass=np.load('./data/pd_pann_50_data/pd_pann_50_diff_mass.npy')
     # calc_pann_two_sigma_error_with_prior_pd_pann(cls=initial_totCL(), nls=zero_noise(ells), fgres=zero_fgres(ells), ells=ells, lmin=10, lmax=4000, fsky=1, filename='./calc/test_sig.npy', pd_pann_diff_mass=pd_pann_diff_mass)
-    # print(datetime.datetime.now())
 
-    mass_len=50
-    mass_start=1e-5
-    mass_end=5e3
-    DM_mass_set=np.geomspace(mass_start,mass_end,mass_len)
+    pd_gamma_diff_mass=np.load('./data/pd_gamma_50_data/pd_gamma_50_diff_mass.npy')  # todo
+    calc_gamma_two_sigma_error_with_prior_pd_gamma(cls=initial_totCL(), nls=zero_noise(ells), fgres=zero_fgres(ells), ells=ells, lmin=10, lmax=4000, fsky=1, filename='./data/sig_gamma_data/sig_gamma_diff_mass.npy', pd_gamma_diff_mass=pd_gamma_diff_mass)
 
 
-    sig_Pann=np.load('./calc/test_sig.npy')
-    from matplotlib import pyplot as plt
-    xs=np.geomspace(1e-5,5e3,1000)
-    cs=log_Cubic_interpolate(DM_mass_set, sig_Pann[:,0])
-    plt.loglog(xs,cs(xs),color='b')
-    plt.xlabel('dark matter mass')
-    plt.ylabel('energy injection')
-    cs=log_Cubic_interpolate(DM_mass_set, sig_Pann[:,1])
-    plt.loglog(xs,cs(xs),color='g')
-    cs=log_Cubic_interpolate(DM_mass_set, sig_Pann[:,2])
-    plt.loglog(xs,cs(xs),color='y')
-    cs=log_Cubic_interpolate(DM_mass_set, sig_Pann[:,3])
-    plt.loglog(xs,cs(xs),color='r')
-    plt.legend(['TT','EE','TE','TT+EE+TE'],loc='upper right')
-    plt.ylim((1e-28,1e-25))
-    plt.xlim((1e-5,5e3))
-    plt.title('CVL condition lmax=4000')
-    plt.show()
+    # mass_len=50
+    # mass_start=1.01e-5
+    # mass_end=5e3
+    # DM_mass_set=np.geomspace(mass_start,mass_end,mass_len)
 
 
+    # sig_Pann=np.load('./calc/test_sig.npy')
+    # from matplotlib import pyplot as plt
+    # xs=np.geomspace(1e-5,5e3,1000)
+    # cs=log_Cubic_interpolate(DM_mass_set, sig_Pann[:,0])
+    # plt.loglog(xs,cs(xs),color='b')
+    # plt.xlabel('dark matter mass')
+    # plt.ylabel('energy injection')
+    # cs=log_Cubic_interpolate(DM_mass_set, sig_Pann[:,1])
+    # plt.loglog(xs,cs(xs),color='g')
+    # cs=log_Cubic_interpolate(DM_mass_set, sig_Pann[:,2])
+    # plt.loglog(xs,cs(xs),color='y')
+    # cs=log_Cubic_interpolate(DM_mass_set, sig_Pann[:,3])
+    # plt.loglog(xs,cs(xs),color='r')
+    # plt.legend(['TT','EE','TE','TT+EE+TE'],loc='upper right')
+    # plt.ylim((1e-28,1e-25))
+    # plt.xlim((1e-5,5e3))
+    # plt.title('CVL condition lmax=4000')
+    # plt.show()
+
+    print(datetime.datetime.now())
 
 
 
