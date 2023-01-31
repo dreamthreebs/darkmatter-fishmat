@@ -55,16 +55,56 @@ def pico_fg_res(ells):
     pico_fgres=fgres_dls2cls(fgresdls,ells,1,len(TTFgres))
     return pico_fgres
 
+def deg_to_rad(deg)->'rad':
+    return 0.017453*deg
+
+def arcmin_to_rad(deg)->'rad':
+    return 0.00029089*deg
+
+def nls_at_some_frequency(ells,frequency:'GHz',beamFWHM:'arcmin',noiselevel:'muKdeg')->'numpy array(ells,)':
+    return deg_to_rad(noiselevel)**2*(np.exp(np.arange(ells)*(np.arange(ells)+1)*arcmin_to_rad(beamFWHM)**2*(1/(8*np.log(2)))))
+
+
+def planck_noise_level(ells):
+    frequency_num=9
+    freq30_tem=nls_at_some_frequency(ells, frequency=30, beamFWHM=32.29, noiselevel=2.5)
+    freq44_tem=nls_at_some_frequency(ells, frequency=44, beamFWHM=27.94, noiselevel=2.7)
+    freq70_tem=nls_at_some_frequency(ells, frequency=70, beamFWHM=13.08, noiselevel=3.5)
+    freq100_tem=nls_at_some_frequency(ells, frequency=100, beamFWHM=9.66, noiselevel=1.29)
+    freq143_tem=nls_at_some_frequency(ells, frequency=143, beamFWHM=7.22, noiselevel=0.55)
+    freq217_tem=nls_at_some_frequency(ells, frequency=217, beamFWHM=4.90, noiselevel=0.78)
+    freq353_tem=nls_at_some_frequency(ells, frequency=353, beamFWHM=4.92, noiselevel=2.56)
+    freq545=nls_at_some_frequency(ells, frequency=535, beamFWHM=4.67, noiselevel=0.78)
+    freq857=nls_at_some_frequency(ells, frequency=857, beamFWHM=4.22, noiselevel=0.72)
+
+    freq30_pol=nls_at_some_frequency(ells, frequency=30, beamFWHM=32.29, noiselevel=3.5)
+    freq44_pol=nls_at_some_frequency(ells, frequency=44, beamFWHM=27.94, noiselevel=4.0)
+    freq70_pol=nls_at_some_frequency(ells, frequency=70, beamFWHM=13.08, noiselevel=5.0)
+    freq100_pol=nls_at_some_frequency(ells, frequency=100, beamFWHM=9.66, noiselevel=1.96)
+    freq143_pol=nls_at_some_frequency(ells, frequency=143, beamFWHM=7.22, noiselevel=1.17)
+    freq217_pol=nls_at_some_frequency(ells, frequency=217, beamFWHM=4.90, noiselevel=1.75)
+    freq353_pol=nls_at_some_frequency(ells, frequency=353, beamFWHM=4.92, noiselevel=7.31)
+
+    planck_tem_noise_set=np.stack((1/freq30_tem,1/freq44_tem,1/freq70_tem,1/freq100_tem,1/freq143_tem,1/freq217_tem,1/freq353_tem,1/freq545,1/freq857),axis=1)
+    planck_tem_nls=1/np.sum(planck_tem_noise_set,axis=1)
+
+    planck_pol_noise_set=np.stack((1/freq30_pol,1/freq44_pol,1/freq70_pol,1/freq100_pol,1/freq143_pol,1/freq217_pol,1/freq353_pol,1/freq545,1/freq857),axis=1)
+    planck_pol_nls=1/np.sum(planck_pol_noise_set,axis=1)
+    planck_noise=np.stack((planck_tem_nls,planck_pol_nls),axis=1)
+    return planck_noise
+
 def check_nls_and_fgres():
     from matplotlib import pyplot as plt
     ls=np.arange(ells)
     plt.figure(1)
     plt.loglog(ls,ls*ls*ali_noise_level(ells)[:,0])
     plt.loglog(ls,ls*ls*pico_noise_level(ells)[:,0])
+    plt.loglog(ls,ls*ls*planck_noise_level(ells)[:,0])
 
     plt.figure(2)
     plt.loglog(ls,ls*ls*ali_noise_level(ells)[:,1])
     plt.loglog(ls,ls*ls*pico_noise_level(ells)[:,1])
+    plt.loglog(ls,ls*ls*planck_noise_level(ells)[:,1])
 
     plt.figure(3)
     plt.semilogx(ls,ls*ls*ali_fg_res(ells)[:,0])
@@ -97,10 +137,11 @@ if __name__=="__main__":
     os.chdir("../")
     print(os.getcwd())
 
-    # check_nls_and_fgres()
-    nls=zero_noise(ells)
-    fgres=zero_fgres(ells)
-    print(f"{nls}\n {nls.shape}")
-    print(f"{fgres}\n {fgres.shape}")
+    check_nls_and_fgres()
+    # nls=zero_noise(ells)
+    # fgres=zero_fgres(ells)
+    # print(f"{nls}\n {nls.shape}")
+    # print(f"{fgres}\n {fgres.shape}")
+
 
 
