@@ -20,4 +20,10 @@ Release/
 build
 inspectionProfiles
 tags
-*.log
+__pycache__/
+
+# Large binary / generated files
+*.tar.gz
+*.npy
+camb/paper/results/
+camb/paper/figures/
