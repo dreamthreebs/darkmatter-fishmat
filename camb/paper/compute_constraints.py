@@ -248,61 +248,84 @@ CONFIGS = {
 }
 
 
-def main():
+CHANNEL_DATA = {
+    'gamma_gamma': {
+        'pd_pann': './data/pd_pann_50_data/pd_pann_50_diff_mass.npy',
+        'pd_gamma': './data/pd_gamma_50_data/pd_gamma_50_diff_mass.npy',
+        'label': 'γγ',
+    },
+    'e_pm': {
+        'pd_pann': './data/pd_pann_50_elec/pd_pann_50_diff_mass.npy',
+        'pd_gamma': './data/pd_gamma_50_elec/pd_gamma_50_diff_mass.npy',
+        'label': 'e⁺e⁻',
+    },
+}
+
+
+def run_channel(channel_key):
+    """Run Fisher constraints for a single DM channel."""
+    ch = CHANNEL_DATA[channel_key]
     t0 = time.time()
 
     print('=' * 60)
-    print('Fisher Matrix Constraints — arXiv:2304.07793 Figure 5')
-    print('Channel: DM → γγ')
+    print(f'Fisher Matrix Constraints — channel: {ch["label"]}')
     print('=' * 60)
 
-    # Load pre-computed partial derivatives (50 mass points)
-    print('\nLoading pre-computed partial derivatives...')
-    pd_pann = np.load('./data/pd_pann_50_data/pd_pann_50_diff_mass.npy')
-    pd_gamma = np.load('./data/pd_gamma_50_data/pd_gamma_50_diff_mass.npy')
+    pd_pann = np.load(ch['pd_pann'])
+    pd_gamma = np.load(ch['pd_gamma'])
     print(f'  pd_pann shape: {pd_pann.shape}')
     print(f'  pd_gamma shape: {pd_gamma.shape}')
 
-    # Compute fiducial C_l (runs CAMB once)
     print('\nComputing fiducial C_l (running CAMB)...')
     set_all_params()
     cls = initial_totCL()
-    print(f'  cls shape: {cls.shape}')
 
-    # Loop over configurations
+    suffix = '' if channel_key == 'gamma_gamma' else f'_{channel_key}'
+
     for config_name, cfg in CONFIGS.items():
         print(f'\n{"="*60}')
-        print(f'Config: {config_name}')
+        print(f'Config: {config_name}  ({ch["label"]})')
         print(f'  {cfg["description"]}')
         print(f'{"="*60}')
 
         nls = cfg['noise_func']()
         fgres = cfg['fgres_func']()
 
-        # --- Annihilation (p_ann) ---
         print(f'\n  Computing p_ann constraints...')
         t1 = time.time()
         sig_pann = compute_2sigma_vs_mass(
             pd_pann, cls, nls, fgres,
             cfg['lmin'], cfg['lmax'], cfg['fsky']
         )
-        fname = os.path.join(RESULTS_DIR, f'sig_pann_{config_name}.npy')
+        fname = os.path.join(RESULTS_DIR, f'sig_pann_{config_name}{suffix}.npy')
         np.save(fname, sig_pann)
         print(f'  Saved: {fname} ({time.time()-t1:.1f}s)')
 
-        # --- Decay (Gamma) ---
         print(f'\n  Computing Gamma constraints...')
         t1 = time.time()
         sig_gamma = compute_2sigma_vs_mass(
             pd_gamma, cls, nls, fgres,
             cfg['lmin'], cfg['lmax'], cfg['fsky']
         )
-        fname = os.path.join(RESULTS_DIR, f'sig_gamma_{config_name}.npy')
+        fname = os.path.join(RESULTS_DIR, f'sig_gamma_{config_name}{suffix}.npy')
         np.save(fname, sig_gamma)
         print(f'  Saved: {fname} ({time.time()-t1:.1f}s)')
 
-    print(f'\nAll done! Total time: {time.time()-t0:.1f}s')
-    print(f'Results saved to: {RESULTS_DIR}/')
+    print(f'\n{ch["label"]} channel done! ({time.time()-t0:.1f}s)')
+
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--channel', default='all',
+                        choices=['gamma_gamma', 'e_pm', 'all'])
+    args = parser.parse_args()
+
+    channels = list(CHANNEL_DATA.keys()) if args.channel == 'all' else [args.channel]
+    for ch in channels:
+        run_channel(ch)
+
+    print(f'\nAll done! Results in: {RESULTS_DIR}/')
 
 
 if __name__ == '__main__':
