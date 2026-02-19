@@ -55,8 +55,8 @@ def get_TT_fisher_matrix(pd,cls,nls,fgres,lmin,lmax,fsky):
                 Mult=np.matmul(Mul,Cell_inv)
                 Multi=np.matmul(Mult,Cellprime_j)
                 FM_TT[i,j]+=(2*l+1)*np.trace(Multi)/2
-   # print(FM_TT)
     FM_TT*=fsky
+    FM_TT[3,3]+=1/(0.007**2)
     FI=np.linalg.inv(FM_TT)
     sigma=np.zeros((params_num,1))
     #get covariance
@@ -81,10 +81,8 @@ def get_EE_fisher_matrix(pd,cls,nls,fgres,lmin,lmax,fsky):
                 Mult=np.matmul(Mul,Cell_inv)
                 Multi=np.matmul(Mult,Cellprime_j)
                 FM_EE[i,j]+=(2*l+1)*np.trace(Multi)/2
-            # if i==j==3:
-                # FM_EE+=1/(0.013**2)
-   # print(FM_EE)
     FM_EE*=fsky
+    FM_EE[3,3]+=1/(0.007**2)
     FI=np.linalg.inv(FM_EE)
     sigma=np.zeros((params_num,1))
     #get covariance
@@ -109,10 +107,8 @@ def get_TE_fisher_matrix(pd,cls,nls,fgres,lmin,lmax,fsky):
                 Mult=np.matmul(Mul,Cell_inv)
                 Multi=np.matmul(Mult,Cellprime_j)
                 FM_TE[i,j]+=(2*l+1)*np.trace(Multi)
-            # if i==j==3:
-                # FM_TE[i,j]+=1/(0.013**2)
-   # print(FM_TE)
     FM_TE*=fsky
+    FM_TE[3,3]+=1/(0.007**2)
     FI=np.linalg.inv(FM_TE)
     sigma=np.zeros((params_num,1))
     #get covariance
@@ -149,8 +145,8 @@ def get_combined_fisher_matrix(pd,cls,nls,fgres,lmin,lmax,fsky):
                 Mult=np.matmul(Mul,Cell_inv)
                 Multi=np.matmul(Mult,Cellprime_j)
                 FM[i,j]+=(2*l+1)*np.trace(Multi)/2
-   # print(FM)
     FM*=fsky
+    FM[3,3]+=1/(0.007**2)
     FI=np.linalg.inv(FM)
     sigma=np.zeros((params_num,1))
     #get covariance

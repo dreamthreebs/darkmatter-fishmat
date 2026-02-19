@@ -30,6 +30,9 @@ from nls_fgres import (
 )
 from sigfunc import (
     load_basic_6params_pd,
+    get_TT_fisher_matrix,
+    get_EE_fisher_matrix,
+    get_TE_fisher_matrix,
     get_combined_fisher_matrix,
 )
 
@@ -192,14 +195,19 @@ def compute_2sigma_vs_mass(pd_dm_diff_mass, cls, nls, fgres, lmin, lmax, fsky):
 
     for i in range(n_mass):
         pd[:, :, 6] = pd_dm_diff_mass[:, :, i]
-        sig_combined = get_combined_fisher_matrix(
-            pd, cls, nls, fgres, lmin, lmax, fsky
-        )
-        sigma_2[i, 3] = float(2 * sig_combined[params_num - 1])
+        sigma_2[i, 0] = float(2 * get_TT_fisher_matrix(
+            pd, cls, nls, fgres, lmin, lmax, fsky)[params_num - 1])
+        sigma_2[i, 1] = float(2 * get_EE_fisher_matrix(
+            pd, cls, nls, fgres, lmin, lmax, fsky)[params_num - 1])
+        sigma_2[i, 2] = float(2 * get_TE_fisher_matrix(
+            pd, cls, nls, fgres, lmin, lmax, fsky)[params_num - 1])
+        sigma_2[i, 3] = float(2 * get_combined_fisher_matrix(
+            pd, cls, nls, fgres, lmin, lmax, fsky)[params_num - 1])
 
         if (i + 1) % 10 == 0 or i == 0:
             print(f'  mass point {i+1}/{n_mass}, '
-                  f'2sigma(combined) = {sigma_2[i,3]:.3e}')
+                  f'TT={sigma_2[i,0]:.3e} EE={sigma_2[i,1]:.3e} '
+                  f'combined={sigma_2[i,3]:.3e}')
 
     return sigma_2
 
@@ -262,7 +270,7 @@ CHANNEL_DATA = {
 }
 
 
-def run_channel(channel_key):
+def run_channel(channel_key, config_filter=None):
     """Run Fisher constraints for a single DM channel."""
     ch = CHANNEL_DATA[channel_key]
     t0 = time.time()
@@ -282,7 +290,11 @@ def run_channel(channel_key):
 
     suffix = '' if channel_key == 'gamma_gamma' else f'_{channel_key}'
 
-    for config_name, cfg in CONFIGS.items():
+    configs_to_run = CONFIGS.items()
+    if config_filter:
+        configs_to_run = [(k, v) for k, v in CONFIGS.items() if k == config_filter]
+
+    for config_name, cfg in configs_to_run:
         print(f'\n{"="*60}')
         print(f'Config: {config_name}  ({ch["label"]})')
         print(f'  {cfg["description"]}')
@@ -319,11 +331,19 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--channel', default='all',
                         choices=['gamma_gamma', 'e_pm', 'all'])
+    parser.add_argument('--config', default=None,
+                        help='Run only a specific config (e.g. ALI_fgres)')
     args = parser.parse_args()
+
+    if args.config:
+        valid = list(CONFIGS.keys())
+        if args.config not in valid:
+            print(f'Unknown config: {args.config}. Valid: {valid}')
+            return
 
     channels = list(CHANNEL_DATA.keys()) if args.channel == 'all' else [args.channel]
     for ch in channels:
-        run_channel(ch)
+        run_channel(ch, config_filter=args.config)
 
     print(f'\nAll done! Results in: {RESULTS_DIR}/')
 

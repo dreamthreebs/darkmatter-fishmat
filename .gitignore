@@ -24,6 +24,11 @@ __pycache__/
 
 # Large binary / generated files
 *.tar.gz
+*.zip
 *.npy
 camb/paper/results/
 camb/paper/figures/
+
+# Foreground residual data (do not commit)
+FGR_data/
+FGR_data

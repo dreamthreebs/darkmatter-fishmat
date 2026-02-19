@@ -22,15 +22,15 @@
 
 #define ANNIHILATION_H_IONIZATION_ENERGY_AXIS_FILE	"./EFF/Energy_1.txt"
 #define ANNIHILATION_H_IONIZATION_REDSHIFT_AXIS_FILE	"./EFF/Redshift_1.txt"
-#define ANNIHILATION_H_IONIZATION_EFF_TABLE_FILE	"./EFF/Elec_HIon_HMG.txt"
+#define ANNIHILATION_H_IONIZATION_EFF_TABLE_FILE	"./EFF/Phot_HIon_HMG.txt"
 
 #define ANNIHILATION_ALPHA_ENERGY_AXIS_FILE		"./EFF/Energy_2.txt"
 #define ANNIHILATION_ALPHA_REDSHIFT_AXIS_FILE		"./EFF/Redshift_2.txt"
-#define ANNIHILATION_ALPHA_EFF_TABLE_FILE		"./EFF/Elec_LyA_HMG.txt"
+#define ANNIHILATION_ALPHA_EFF_TABLE_FILE		"./EFF/Phot_LyA_HMG.txt"
 
 #define ANNIHILATION_HEATING_ENERGY_AXIS_FILE		"./EFF/Energy_3.txt"
 #define ANNIHILATION_HEATING_REDSHIFT_AXIS_FILE		"./EFF/Redshift_3.txt"
-#define ANNIHILATION_HEATING_EFF_TABLE_FILE		"./EFF/Elec_Heat_HMG.txt"
+#define ANNIHILATION_HEATING_EFF_TABLE_FILE		"./EFF/Phot_Heat_HMG.txt"
 
 /*****Decay Efficiency Tables*****/
 
@@ -39,15 +39,15 @@
 
 #define DECAY_H_IONIZATION_ENERGY_AXIS_FILE		"./EFF/Energy_4.txt"
 #define DECAY_H_IONIZATION_REDSHIFT_AXIS_FILE		"./EFF/Redshift_4.txt"
-#define DECAY_H_IONIZATION_EFF_TABLE_FILE		"./EFF/Elec_HIon_DECAY.txt"
+#define DECAY_H_IONIZATION_EFF_TABLE_FILE		"./EFF/Phot_HIon_DECAY.txt"
 
 #define DECAY_ALPHA_ENERGY_AXIS_FILE			"./EFF/Energy_5.txt"
 #define DECAY_ALPHA_REDSHIFT_AXIS_FILE			"./EFF/Redshift_5.txt"
-#define DECAY_ALPHA_EFF_TABLE_FILE			"./EFF/Elec_LyA_DECAY.txt"
+#define DECAY_ALPHA_EFF_TABLE_FILE			"./EFF/Phot_LyA_DECAY.txt"
 
 #define DECAY_HEATING_ENERGY_AXIS_FILE			"./EFF/Energy_6.txt"
 #define DECAY_HEATING_REDSHIFT_AXIS_FILE		"./EFF/Redshift_6.txt"
-#define DECAY_HEATING_EFF_TABLE_FILE			"./EFF/Elec_Heat_DECAY.txt"
+#define DECAY_HEATING_EFF_TABLE_FILE			"./EFF/Phot_Heat_DECAY.txt"
 
 /*****Blackhole Efficiency Tables*****/
 
@@ -67,7 +67,6 @@
 #define BH_HEATING_EFF_TABLE_FILE                       "./EFF/PBH_Heat_K1.txt"
 
 /**********/
-
 typedef struct {
    double T0;                          /* CMB temperature today in K*/
    double obh2, omh2, odeh2, okh2;     /* density parameters */
