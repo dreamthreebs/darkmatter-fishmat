@@ -38,13 +38,13 @@ XS = np.geomspace(1e-5, 5e3, 500)
 # ----------------------------------------------------------
 PLANCK_REF = {
     'gamma_gamma': {
-        'pann': 5.6e-28,
-        'gamma': 3.7e-25,
+        'pann': 6.0e-28,
+        'gamma': 2.5e-25,
         'ref_mass_GeV': 0.1,
     },
     'e_pm': {
-        'pann': 4.4e-28,   # scaled from γγ by f_eff ratio ≈0.78 at m=0.1 GeV
-        'gamma': 1.4e-25,  # scaled from γγ by f_eff ratio ≈0.39 at m=0.1 GeV
+        'pann': 4.5e-28,
+        'gamma': 5.0e-26,
         'ref_mass_GeV': 0.1,
     },
 }
