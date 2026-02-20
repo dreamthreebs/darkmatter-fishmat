@@ -115,7 +115,7 @@ def plot_figure3():
 
     fg_color = 'tab:green'  # NILC V1 is green in the paper
 
-    fig, axes = plt.subplots(2, 3, figsize=(15, 9))
+    fig, axes = plt.subplots(2, 3, figsize=(11, 7))
     col_names = ['TT', 'TE', 'EE']
     spec_idx = [0, 2, 1]  # cls order: 0=TT, 1=EE, 2=TE
 
@@ -171,18 +171,11 @@ def plot_figure3():
                            'EE': r'$D_\ell^{EE}$'}
             ax.set_ylabel(ylabel_spec[name] + r' [$\mu$K$^2$]', fontsize=11)
 
-            # Legend in EE panels (right column), matching paper
+            # Legend in EE panels (right column), transparent background
             if j == 2:
-                loc = 'lower right' if exp_name == 'PICO' else 'upper left'
-                ax.legend(fontsize=7.5, loc=loc, framealpha=0.9)
+                ax.legend(fontsize=7.5, loc='lower right', framealpha=0)
 
-    # Row titles (matching paper style)
-    fig.text(0.5, 0.96, 'Ground observation Foreground Residual and Noise Power Spectrum',
-             ha='center', fontsize=13)
-    fig.text(0.5, 0.48, 'PICO Foreground Residual and Noise Power Spectrum',
-             ha='center', fontsize=13)
-
-    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    fig.tight_layout()
     fig.subplots_adjust(hspace=0.4)
 
     for fmt, dpi in [('pdf', 300), ('png', 200)]:

@@ -51,7 +51,7 @@ CURVE_DEFS = [
 
 
 def plot_figure4():
-    fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+    fig, axes = plt.subplots(1, 2, figsize=(9, 4))
 
     panels = [
         ('pann',  MASS_PANN,  'sig_pann_ALI_fgres.npy',
@@ -84,17 +84,22 @@ def plot_figure4():
         ax.set_ylim(ylim)
         ax.set_xlabel(r'$m_\chi$ [GeV]', fontsize=13)
         ax.set_ylabel(ylabel, fontsize=13)
-        ax.grid(True, which='both', alpha=0.15)
-        ax.tick_params(which='both', direction='in', top=True, right=True)
-        ax.legend(fontsize=11, loc='upper right', framealpha=0.85)
+        import matplotlib.ticker as mticker
+        ax.xaxis.set_major_locator(mticker.LogLocator(base=10, numticks=20))
+        ax.xaxis.set_major_formatter(mticker.LogFormatterSciNotation())
+        ax.xaxis.set_minor_locator(mticker.LogLocator(base=10, subs=np.arange(2, 10), numticks=100))
+        ax.xaxis.set_minor_formatter(mticker.NullFormatter())
+        ax.yaxis.set_minor_locator(mticker.LogLocator(base=10, subs=np.arange(2, 10), numticks=100))
+        ax.yaxis.set_minor_formatter(mticker.NullFormatter())
+        ax.grid(True, which='major', alpha=0.2)
+        ax.grid(True, which='minor', alpha=0.08)
+        ax.tick_params(which='major', direction='in', top=True, right=True)
+        ax.tick_params(which='minor', direction='in', top=True, right=True, length=3)
+        ax.legend(fontsize=11, loc='upper right', framealpha=0)
 
-    axes[0].set_title('Annihilation', fontsize=14)
-    axes[1].set_title('Decay', fontsize=14)
+    axes[0].set_title(r'$\chi\chi\to\gamma\gamma$', fontsize=14)
+    axes[1].set_title(r'$\chi\to\gamma\gamma$', fontsize=14)
 
-    fig.suptitle(
-        r"95% C.L. upper bounds — Ground observation, $\gamma\gamma$ channel"
-        "\n(NILC V1, cf. arXiv:2304.07793 Figure 4)",
-        fontsize=13, y=1.02)
     fig.tight_layout()
 
     for fmt, dpi in [('pdf', 300), ('png', 200)]:
