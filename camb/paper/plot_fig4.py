@@ -17,6 +17,15 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline, UnivariateSpline
+from plot_style import (
+    FONT_SIZE,
+    LEGEND_SIZE,
+    LINE_WIDTH,
+    TITLE_SIZE,
+    apply_legend_style,
+    apply_result_axis_style,
+    configure_matplotlib,
+)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_DIR = os.path.join(SCRIPT_DIR, 'results')
@@ -44,26 +53,26 @@ def load_result(name):
 
 CURVE_DEFS = [
     # (col_index, color, ls, lw, label)  — col: 0=TT, 1=EE, 3=TT+TE+EE
-    (0, 'black',    '-',  1.8, 'TT'),
-    (1, 'tab:red',  '-',  1.8, 'EE'),
-    (3, 'tab:blue', '-',  1.8, 'TT+TE+EE'),
+    (0, 'black',    '-',  LINE_WIDTH, 'TT'),
+    (1, 'tab:red',  '-',  LINE_WIDTH, 'EE'),
+    (3, 'tab:blue', '-',  LINE_WIDTH, 'TT+TE+EE'),
 ]
 
 
 def plot_figure4():
-    fig, axes = plt.subplots(1, 2, figsize=(9, 4))
+    configure_matplotlib()
+    fig, axes = plt.subplots(1, 2, figsize=(24, 12))
 
     panels = [
         ('pann',  MASS_PANN,  'sig_pann_ALI_fgres.npy',
-         r'$\langle\sigma v\rangle / m_\chi$'
-         r' [cm$^3$ s$^{-1}$ GeV$^{-1}$]',
-         (1e-29, 1e-24)),
+         r'$\langle\sigma v\rangle/m_\chi\quad[cm^3s^{-1}GeV^{-1}]$',
+         (1e-28, 1e-24)),
         ('gamma', MASS_GAMMA, 'sig_gamma_ALI_fgres.npy',
-         r'$\Gamma_\chi$ [s$^{-1}$]',
-         (1e-27, 1e-22)),
+         r'$\Gamma_\chi[s^{-1}]$',
+         (1e-26, 1e-22)),
     ]
 
-    for ax, (ptype, mass_grid, fname, ylabel, ylim) in zip(axes, panels):
+    for i_panel, (ax, (ptype, mass_grid, fname, ylabel, ylim)) in enumerate(zip(axes, panels)):
         data = load_result(fname)
         if data is None:
             ax.text(0.5, 0.5, f'{fname} not found', transform=ax.transAxes,
@@ -78,33 +87,24 @@ def plot_figure4():
                 continue
             sm = 0.15
             cs = log_interp(mass_grid, y, smooth=sm)
-            ax.loglog(xs, cs(xs), color=color, ls=ls, lw=lw, label=label)
+            ax.plot(xs, cs(xs), color=color, ls=ls, lw=lw, label=label)
 
-        ax.set_xlim(mass_grid[0], mass_grid[-1])
+        ax.set_xlim(1e-5, 5e3)
         ax.set_ylim(ylim)
-        ax.set_xlabel(r'$m_\chi$ [GeV]', fontsize=13)
-        ax.set_ylabel(ylabel, fontsize=13)
-        import matplotlib.ticker as mticker
-        ax.xaxis.set_major_locator(mticker.LogLocator(base=10, numticks=20))
-        ax.xaxis.set_major_formatter(mticker.LogFormatterSciNotation())
-        ax.xaxis.set_minor_locator(mticker.LogLocator(base=10, subs=np.arange(2, 10), numticks=100))
-        ax.xaxis.set_minor_formatter(mticker.NullFormatter())
-        ax.yaxis.set_minor_locator(mticker.LogLocator(base=10, subs=np.arange(2, 10), numticks=100))
-        ax.yaxis.set_minor_formatter(mticker.NullFormatter())
-        ax.grid(True, which='major', alpha=0.2)
-        ax.grid(True, which='minor', alpha=0.08)
-        ax.tick_params(which='major', direction='in', top=True, right=True)
-        ax.tick_params(which='minor', direction='in', top=True, right=True, length=3)
-        ax.legend(fontsize=11, loc='upper right', framealpha=0)
+        ax.set_xlabel(r'$m_\chi[GeV]$', fontsize=FONT_SIZE)
+        ax.set_ylabel(ylabel, fontsize=FONT_SIZE)
+        apply_result_axis_style(ax)
+        if i_panel == 1:
+            apply_legend_style(ax, fontsize=LEGEND_SIZE, loc='lower right')
 
-    axes[0].set_title(r'$\chi\chi\to\gamma\gamma$', fontsize=14)
-    axes[1].set_title(r'$\chi\to\gamma\gamma$', fontsize=14)
+    axes[0].set_title(r'$\chi\chi \rightarrow \gamma\gamma$', fontsize=TITLE_SIZE, pad=10)
+    axes[1].set_title(r'$\chi \rightarrow \gamma\gamma$', fontsize=TITLE_SIZE, pad=10)
 
     fig.tight_layout()
 
     for fmt, dpi in [('pdf', 300), ('png', 200)]:
         path = os.path.join(FIGURE_DIR, f'fig4_TT_EE_combined.{fmt}')
-        fig.savefig(path, dpi=dpi, bbox_inches='tight')
+        fig.savefig(path, dpi=dpi)
         print(f'Saved: {path}')
 
 

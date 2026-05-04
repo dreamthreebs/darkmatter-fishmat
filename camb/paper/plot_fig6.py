@@ -17,6 +17,15 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
+from plot_style import (
+    FONT_SIZE,
+    LEGEND_SIZE,
+    LINE_WIDTH,
+    TITLE_SIZE,
+    apply_legend_style,
+    apply_result_axis_style,
+    configure_matplotlib,
+)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_DIR = os.path.join(SCRIPT_DIR, 'results')
@@ -63,10 +72,10 @@ def calibrate_planck(fisher_data, mass_grid, ref_value, ref_mass):
 
 
 CURVE_DEFS = [
-    ('Planck_cal', 'tab:green', '-', 1.8, 'Planck'),
-    ('ALI_fgres',  'tab:red',  '-',  1.5, 'Ground'),
-    ('PICO_fgres', 'tab:blue', '-',  1.5, 'PICO'),
-    ('CVL',        'black',    '-',  1.5, r'CVL $\ell\in[10,3000]$'),
+    # ('Planck_cal', 'black',     '-', LINE_WIDTH, 'Planck'),
+    ('ALI_fgres',  'tab:red',   '-', LINE_WIDTH, 'Ground observation'),
+    ('PICO_fgres', 'tab:green', '-', LINE_WIDTH, 'PICO'),
+    ('CVL',        'tab:blue',  '-', LINE_WIDTH, r'CVL $\ell\in[10,3000]$'),
 ]
 
 
@@ -95,28 +104,24 @@ def plot_panel(ax, param_type, channel, xlim=None, show_legend=False):
         if np.sum(mask) < 4:
             continue
         interp = log_interp(mass_grid[mask], y[mask])
-        ax.loglog(xs, interp(xs), color=color, ls=ls, lw=lw, label=label)
+        ax.plot(xs, interp(xs), color=color, ls=ls, lw=lw, label=label)
 
-    import matplotlib.ticker as mticker
-    ax.xaxis.set_major_locator(mticker.LogLocator(base=10, numticks=20))
-    ax.xaxis.set_major_formatter(mticker.LogFormatterSciNotation())
-    ax.xaxis.set_minor_locator(mticker.LogLocator(base=10, subs=np.arange(2, 10), numticks=100))
-    ax.xaxis.set_minor_formatter(mticker.NullFormatter())
-    ax.yaxis.set_minor_locator(mticker.LogLocator(base=10, subs=np.arange(2, 10), numticks=100))
-    ax.yaxis.set_minor_formatter(mticker.NullFormatter())
-    ax.grid(True, which='major', alpha=0.2)
-    ax.grid(True, which='minor', alpha=0.08)
-    ax.tick_params(which='major', direction='in', top=True, right=True)
-    ax.tick_params(which='minor', direction='in', top=True, right=True, length=3)
+    apply_result_axis_style(ax)
     if show_legend:
-        ax.legend(fontsize=7.5, loc='upper right', framealpha=0)
+        apply_legend_style(ax, fontsize=LEGEND_SIZE, loc='lower right')
 
 
 def plot_figure6():
-    fig, axes = plt.subplots(2, 2, figsize=(9, 7))
+    configure_matplotlib()
+    fig, axes = plt.subplots(2, 2, figsize=(24, 24))
 
     channels = ['gamma_gamma', 'e_pm']
-    ch_labels = [r'$\gamma\gamma$', r'$e^+e^-$']
+    ch_titles = {
+        ('pann', 'gamma_gamma'): r'$\chi\chi \rightarrow \gamma\gamma$',
+        ('pann', 'e_pm'): r'$\chi\chi \rightarrow e^-e^+$',
+        ('gamma', 'gamma_gamma'): r'$\chi \rightarrow \gamma\gamma$',
+        ('gamma', 'e_pm'): r'$\chi \rightarrow e^-e^+$',
+    }
 
     xlims = {
         ('pann',  'gamma_gamma'): (1e-5, 5e3),
@@ -125,39 +130,33 @@ def plot_figure6():
         ('gamma', 'e_pm'):        (1e-3, 1e4),
     }
 
-    for j, (ch, ch_lbl) in enumerate(zip(channels, ch_labels)):
+    for j, ch in enumerate(channels):
         ax = axes[0, j]
         xl_p = xlims[('pann', ch)]
-        plot_panel(ax, 'pann', ch, xlim=xl_p, show_legend=(j == 0))
+        plot_panel(ax, 'pann', ch, xlim=xl_p, show_legend=False)
         ax.set_xlim(xl_p)
         ax.set_ylim(1e-29, 1e-25)
-        if j == 0:
-            ax.set_ylabel(
-                r'$\langle\sigma v\rangle / m_\chi$'
-                r' [cm$^3$ s$^{-1}$ GeV$^{-1}$]', fontsize=13)
-        ax.set_title(ch_lbl, fontsize=14)
+        ax.set_xlabel(r'$m_\chi[GeV]$', fontsize=FONT_SIZE)
+        ax.set_ylabel(
+            r'$\langle\sigma v\rangle/m_\chi\quad[cm^3s^{-1}GeV^{-1}]$',
+            fontsize=FONT_SIZE,
+        )
+        ax.set_title(ch_titles[('pann', ch)], fontsize=TITLE_SIZE, pad=10)
 
         ax = axes[1, j]
         xl_g = xlims[('gamma', ch)]
         plot_panel(ax, 'gamma', ch, xlim=xl_g, show_legend=(j == 1))
         ax.set_xlim(xl_g)
         ax.set_ylim(1e-27, 1e-23)
-        ax.set_xlabel(r'$m_\chi$ [GeV]', fontsize=13)
-        if j == 0:
-            ax.set_ylabel(r'$\Gamma_\chi$ [s$^{-1}$]', fontsize=13)
+        ax.set_xlabel(r'$m_\chi[GeV]$', fontsize=FONT_SIZE)
+        ax.set_ylabel(r'$\Gamma_\chi[s^{-1}]$', fontsize=FONT_SIZE)
+        ax.set_title(ch_titles[('gamma', ch)], fontsize=TITLE_SIZE, pad=10)
 
-    axes[0, 1].annotate(r'$\chi\chi\to\gamma\gamma,\,e^+e^-$', xy=(1.04, 0.5),
-                         xycoords='axes fraction', fontsize=12,
-                         rotation=270, va='center', ha='left')
-    axes[1, 1].annotate(r'$\chi\to\gamma\gamma,\,e^+e^-$', xy=(1.04, 0.5),
-                         xycoords='axes fraction', fontsize=12,
-                         rotation=270, va='center', ha='left')
-
-    fig.tight_layout(rect=[0, 0, 0.97, 1])
+    fig.tight_layout(rect=[0, 0, 0.97, 0.96])
 
     for fmt, dpi in [('pdf', 300), ('png', 200)]:
         path = os.path.join(FIGURE_DIR, f'fig6_fisher.{fmt}')
-        fig.savefig(path, dpi=dpi, bbox_inches='tight')
+        fig.savefig(path, dpi=dpi)
         print(f'Saved: {path}')
 
     for ch in channels:

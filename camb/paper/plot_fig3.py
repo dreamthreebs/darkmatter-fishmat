@@ -163,7 +163,7 @@ def plot_figure3():
             ax.set_xlim(xl)
             ax.set_ylim(ylims[(exp_name, name)])
             ax.set_xlabel(r'$\ell$', fontsize=12)
-            ax.grid(True, which='both', alpha=0.15)
+            ax.grid(False)
             ax.tick_params(which='both', direction='in', top=True, right=True)
 
             ylabel_spec = {'TT': r'$D_\ell^{TT}$',
