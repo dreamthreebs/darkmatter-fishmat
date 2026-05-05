@@ -135,6 +135,65 @@ def fig5():
                   f'范围 [{np.min(pct):+.1f}%, {np.max(pct):+.1f}%]')
 
 
+def fig6():
+    """Fig 6: Planck (calibrated) vs Ground (ALI) vs PICO vs CVL,
+       improvements at m=0.1 GeV for both γγ and e+e- channels.
+    """
+    sec('Fig 6 — m_χ = 0.1 GeV 处各实验对 Planck 的改善倍数')
+    print('  Planck 曲线: Fisher 预测 (sig_*_Planck*.npy 第 4 列), 在 m=0.1 GeV 处')
+    print('  按文献值校准——γγ pann -> 6.0e-28, γγ gamma -> 2.5e-25,')
+    print('  e+e- pann -> 4.5e-28, e+e- gamma -> 5.0e-26 (cm^3 s^-1 GeV^-1 / s^-1)')
+    print('  曲线形状沿用 Fisher 预测、整体仅做一个常数 rescale。')
+    print('  "A 比 B 改善 k 倍" 定义为 y_B / y_A = k (>1，A 给出更紧的上限)。')
+
+    PLANCK_REF = {
+        'gamma_gamma': {'pann': 6.0e-28, 'gamma': 2.5e-25, 'ref_mass_GeV': 0.1},
+        'e_pm':        {'pann': 4.5e-28, 'gamma': 5.0e-26, 'ref_mass_GeV': 0.1},
+    }
+
+    M_REF = 0.1
+    for ch_label, suffix, ch_show in [
+        ('gamma_gamma', '', 'γγ'),
+        ('e_pm',        '_e_pm', 'e+e-'),
+    ]:
+        ref = PLANCK_REF[ch_label]
+        print(f'\n### 通道 {ch_show}')
+        for pt, p_label, mass_grid, unit in [
+            ('pann',  '湮灭 ⟨σv⟩/m_χ', MASS_PANN,  'cm^3 s^-1 GeV^-1'),
+            ('gamma', '衰变 Γ_χ',     MASS_GAMMA, 's^-1'),
+        ]:
+            raw = load(f'sig_{pt}_Planck{suffix}.npy')
+            if raw is None:
+                continue
+            idx = np.argmin(np.abs(mass_grid - ref['ref_mass_GeV']))
+            cal_factor = ref[pt] / raw[idx, 3]
+            planck_y = raw[:, 3] * cal_factor
+
+            ali  = load(f'sig_{pt}_ALI_fgres{suffix}.npy')
+            pico = load(f'sig_{pt}_PICO_fgres{suffix}.npy')
+            cvl  = load(f'sig_{pt}_CVL{suffix}.npy')
+
+            p   = interp_at(mass_grid, planck_y, M_REF)
+            ali_v  = interp_at(mass_grid, ali[:, 3],  M_REF) if ali  is not None else np.nan
+            pico_v = interp_at(mass_grid, pico[:, 3], M_REF) if pico is not None else np.nan
+            cvl_v  = interp_at(mass_grid, cvl[:, 3],  M_REF) if cvl  is not None else np.nan
+
+            print(f'\n-- {p_label}  [{unit}], m_χ=0.1 GeV --')
+            print(f'    Planck (校准)        = {p:.2e}')
+            print(f'    Ground (ALI+fg)     = {ali_v:.2e}      Planck/Ground = {p/ali_v:.2f}x')
+            print(f'    PICO (PICO+fg)      = {pico_v:.2e}      Planck/PICO   = {p/pico_v:.2f}x'
+                  f'   Ground/PICO = {ali_v/pico_v:.2f}x')
+            print(f'    CVL                 = {cvl_v:.2e}      Planck/CVL    = {p/cvl_v:.2f}x'
+                  f'   PICO/CVL    = {pico_v/cvl_v:.2f}x')
+
+            print(f'    论文写法:')
+            print(f'      "对于{p_label.split()[0]}通道, 以 m_χ ~ 0.1 GeV、{ch_show} 为例, '
+                  f'地面观测对{p_label.split()[0]}参数的 95% 置信上限达到 '
+                  f'{p_label.split()[1]} < {ali_v:.1e} {unit},')
+            print(f'       相对于 Planck 改善约 {p/ali_v:.1f} 倍, '
+                  f'PICO 在此基础上可再进一步改善约 {ali_v/pico_v:.1f} 倍."')
+
+
 def main():
     print('定义:')
     print('  - 2σ 上限曲线 y(m),  y 越小 = 约束越强。')
@@ -142,6 +201,7 @@ def main():
     print('  - 全局指标用 log 域几何平均（因为 y 在 m 上跨多个数量级）。')
     fig4()
     fig5()
+    fig6()
 
 
 if __name__ == '__main__':

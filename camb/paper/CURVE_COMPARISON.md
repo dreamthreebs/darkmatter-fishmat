@@ -98,14 +98,100 @@ Fig 5 里黑色 CVL 曲线按设定没有噪声、也没前景，所以不参与
 
 ---
 
-## 4. 如何复现 / 换模型后更新
+## 4. Fig 6 — Planck 校准线 + 各实验改善倍数
+
+文件：`camb/paper/figures/fig6_fisher.png` （已经把 Planck 黑线加进去了）。
+
+### 4.1 Planck 黑线怎么画 (calibration recipe)
+
+1. **形状来源**：Fisher matrix 跑 Planck 配置（噪声、$f_\mathrm{sky}$、$\ell_\max$
+   都按 Planck 2018 设置），结果保存在
+   `results/sig_pann_Planck.npy`、`sig_pann_Planck_e_pm.npy`、
+   `sig_gamma_Planck.npy`、`sig_gamma_Planck_e_pm.npy`，第 4 列 (`col=3`)
+   就是 Fisher 给出的 2σ 上限 $y_\mathrm{Fisher}^{\rm Planck}(m_\chi)$。
+2. **整体 normalization 校准**：Fisher 是高斯近似，绝对量级与 Planck 公开
+   posterior（[Planck 2018 Aghanim et al. 2020] 给出的 95% C.L. 值）会差一
+   个 $O(1)$ 因子。我们在 $m_\chi^{\rm ref} = 0.1$ GeV 处把 Fisher 数对到
+   公开的参考值上：
+
+   $$ y^{\rm Planck,\ cal}(m_\chi) \;=\; y^{\rm Planck,\ Fisher}(m_\chi) \;\times\; \frac{y^{\rm ref}_{\rm Planck18}(m_\chi^{\rm ref})}{y^{\rm Planck,\ Fisher}(m_\chi^{\rm ref})}. $$
+
+   也就是 **形状照搬 Fisher 预测、整体乘一个常数**。
+
+3. **校准用的参考值** (`PLANCK_REF` in `plot_fig6.py`)：
+
+   | 通道 | 参数 | 参考 95% C.L. 值 @ $m_\chi=0.1$ GeV | 实际校准系数 |
+   |---|---|---|---|
+   | $\gamma\gamma$  | $\langle\sigma v\rangle/m_\chi$ | $6.0\times10^{-28}\ {\rm cm^3 s^{-1} GeV^{-1}}$ | × 1.75 |
+   | $\gamma\gamma$  | $\Gamma_\chi$                   | $2.5\times10^{-25}\ {\rm s^{-1}}$               | × 2.04 |
+   | $e^+e^-$        | $\langle\sigma v\rangle/m_\chi$ | $4.5\times10^{-28}\ {\rm cm^3 s^{-1} GeV^{-1}}$ | × 1.64 |
+   | $e^+e^-$        | $\Gamma_\chi$                   | $5.0\times10^{-26}\ {\rm s^{-1}}$               | × 2.09 |
+
+   常数 $\sim 1.6\!-\!2.1\times$ 与 Fisher 相对真实 MCMC 上限的 $\sim 2\sigma$
+   factor 一致，符合预期。
+
+4. **代码入口**：`camb/paper/plot_fig6.py` 中 `CURVE_DEFS` 第一项
+   `('Planck_cal', 'black', '-', LINE_WIDTH, 'Planck 2018')`，由
+   `calibrate_planck()` 实施 rescale。
+
+### 4.2 m_χ = 0.1 GeV 处的数字 (来自 `compare_curves.py`)
+
+| 通道 | 参数 | Planck (校准) | Ground (ALI+fg) | PICO (PICO+fg) | CVL |
+|---|---|---|---|---|---|
+| $\gamma\gamma$  | $\langle\sigma v\rangle/m_\chi$ | $6.1\times10^{-28}$ | $3.7\times10^{-28}$ | $1.7\times10^{-28}$ | $1.4\times10^{-28}$ |
+| $\gamma\gamma$  | $\Gamma_\chi$                   | $2.6\times10^{-25}$ | $1.2\times10^{-25}$ | $4.6\times10^{-26}$ | $3.4\times10^{-26}$ |
+| $e^+e^-$        | $\langle\sigma v\rangle/m_\chi$ | $4.7\times10^{-28}$ | $2.9\times10^{-28}$ | $1.3\times10^{-28}$ | $1.1\times10^{-28}$ |
+| $e^+e^-$        | $\Gamma_\chi$                   | $5.2\times10^{-26}$ | $2.3\times10^{-26}$ | $5.4\times10^{-27}$ | $3.6\times10^{-27}$ |
+
+改善倍数（$y_{\rm worse}/y_{\rm better}$，越大代表后者越紧）：
+
+| 通道 | 参数 | Ground 比 Planck | PICO 比 Ground | PICO 比 Planck (累计) | CVL 比 PICO |
+|---|---|---|---|---|---|
+| $\gamma\gamma$  | 湮灭 | **1.65 ×** | **2.21 ×** | 3.65 × | 1.23 × |
+| $\gamma\gamma$  | 衰变 | **2.26 ×** | **2.51 ×** | 5.67 × | 1.36 × |
+| $e^+e^-$        | 湮灭 | **1.59 ×** | **2.20 ×** | 3.50 × | 1.24 × |
+| $e^+e^-$        | 衰变 | **2.26 ×** | **4.26 ×** | 9.65 × | 1.48 × |
+
+### 4.3 可直接写进正文的 4 句对应陈述
+
+> 对于湮灭通道，以 $m_\chi\sim0.1$ GeV、$\gamma\gamma$ 为例，地面观测对湮灭
+> 参数的 95% 置信上限达到 $\langle\sigma v\rangle/m_\chi < 3.7\times10^{-28}\
+> {\rm cm^3\,GeV^{-1}\,s^{-1}}$，相对于 Planck 改善约 **1.7 倍**，PICO 在此
+> 基础上可再进一步改善约 **2.2 倍**。
+
+> 对于衰变通道，以 $m_\chi\sim0.1$ GeV、$\gamma\gamma$ 为例，地面观测对衰变
+> 参数的 95% 置信上限达到 $\Gamma_\chi < 1.2\times10^{-25}\ {\rm s^{-1}}$，
+> 相对于 Planck 改善约 **2.3 倍**，PICO 在此基础上可再进一步改善约 **2.5
+> 倍**。
+
+> 对于湮灭通道，以 $m_\chi\sim0.1$ GeV、$e^+e^-$ 为例，地面观测对湮灭
+> 参数的 95% 置信上限达到 $\langle\sigma v\rangle/m_\chi < 2.9\times10^{-28}\
+> {\rm cm^3\,GeV^{-1}\,s^{-1}}$，相对于 Planck 改善约 **1.6 倍**，PICO 在此
+> 基础上可再进一步改善约 **2.2 倍**。
+
+> 对于衰变通道，以 $m_\chi\sim0.1$ GeV、$e^+e^-$ 为例，地面观测对衰变
+> 参数的 95% 置信上限达到 $\Gamma_\chi < 2.3\times10^{-26}\ {\rm s^{-1}}$，
+> 相对于 Planck 改善约 **2.3 倍**，PICO 在此基础上可再进一步改善约 **4.3
+> 倍**。
+
+注意：γγ pann 的「Ground/Planck」改善 1.65× 与你最初示例里的 1.2× 不一致，
+原因是当前 fg residual 模型 + Fisher 设置下 Ground 的真实上限是
+$3.7\times10^{-28}$ 而不是示例文字里写的 $4.5\times10^{-28}$（后者其实更接近
+$e^+e^-$ 通道的 Planck 参考值）。如果要保留「1.2 倍」的写法，需要回头核对
+Ground 的 Fisher 配置或 fg residual 是否换过版本。
+
+---
+
+## 6. 如何复现 / 换模型后更新
 
 ```bash
 cd camb/paper
 python compare_curves.py        # 重跑当前 results/ 下的比值
+python plot_fig6.py             # 重新画 Fig 6 (含 Planck 黑线)
 # 若换了 fg residual 模型：
-# python compute_constraints.py  # 先重算 Fisher
-# python compare_curves.py        # 再出比值
+# python compute_constraints.py # 先重算 Fisher
+# python compare_curves.py       # 再出比值 + 改善倍数
+# python plot_fig6.py            # 再出图
 ```
 
 修改口径（比如改成算术平均、或只统计某个质量区间）：编辑
@@ -115,7 +201,7 @@ residual 重跑 `compute_constraints.py` 后再跑本脚本即自动更新。
 
 ---
 
-## 5. 数据字段速查
+## 7. 数据字段速查
 
 | 文件名 pattern                          | 形状     | 列含义                                     |
 |-----------------------------------------|----------|--------------------------------------------|

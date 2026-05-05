@@ -72,7 +72,7 @@ def calibrate_planck(fisher_data, mass_grid, ref_value, ref_mass):
 
 
 CURVE_DEFS = [
-    # ('Planck_cal', 'black',     '-', LINE_WIDTH, 'Planck'),
+    ('Planck_cal', 'black',     '-', LINE_WIDTH, 'Planck 2018'),
     ('ALI_fgres',  'tab:red',   '-', LINE_WIDTH, 'Ground observation'),
     ('PICO_fgres', 'tab:green', '-', LINE_WIDTH, 'PICO'),
     ('CVL',        'tab:blue',  '-', LINE_WIDTH, r'CVL $\ell\in[10,3000]$'),
